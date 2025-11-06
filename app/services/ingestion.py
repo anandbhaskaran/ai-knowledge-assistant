@@ -9,7 +9,6 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.ingestion import IngestionPipeline
 
 from app.services.retriever import get_global_index
-from app.services.enhanced_metadata import extract_enhanced_metadata
 from app.core.config import settings
 
 # Get logger
@@ -74,6 +73,37 @@ def get_file_content(file_path: str) -> str:
         logger.warning(f"Could not read file content from {file_path}: {e}")
         return ""
 
+
+def extract_simple_metadata(file_path: str, content: str) -> Dict[str, Any]:
+    """
+    Extract minimal metadata from a file and its content.
+
+    Args:
+        file_path: Path to the file
+        content: Text content of the file
+
+    Returns:
+        Dictionary of simple metadata
+    """
+    # Basic metadata
+    basename = os.path.basename(file_path)
+    file_date = extract_date_from_file(file_path)
+    title = os.path.splitext(basename)[0].replace("_", " ").title()
+
+    # Get content length for basic metrics
+    word_count = len(content.split())
+
+    # Simplified metadata
+    metadata = {
+        "source": basename,
+        "title": title,
+        "date": file_date,
+        "file_path": file_path,
+        "word_count": word_count
+    }
+
+    return metadata
+
 def ingest_articles(directory_path: str, recursive: bool = True) -> bool:
     """
     Ingest articles from a directory into the vector store
@@ -115,11 +145,11 @@ def ingest_articles(directory_path: str, recursive: bool = True) -> bool:
             # Get document content
             content = doc.get_content()
 
-            # Extract enhanced metadata
-            metadata = extract_enhanced_metadata(file_path, content)
+            # Extract simplified metadata
+            metadata = extract_simple_metadata(file_path, content)
 
             # Log metadata extraction
-            logger.info(f"Enhanced metadata extracted for {os.path.basename(file_path)}: {len(metadata)} attributes")
+            logger.info(f"Simple metadata extracted for {os.path.basename(file_path)}: {len(metadata)} attributes")
 
             # Update document metadata
             doc.metadata.update(metadata)
@@ -186,11 +216,11 @@ def ingest_file(file_path: str) -> bool:
             # Get document content
             content = doc.get_content()
 
-            # Extract enhanced metadata
-            metadata = extract_enhanced_metadata(file_path, content)
+            # Extract simplified metadata
+            metadata = extract_simple_metadata(file_path, content)
 
             # Log metadata extraction
-            logger.info(f"Enhanced metadata extracted for {os.path.basename(file_path)}: {len(metadata)} attributes")
+            logger.info(f"Simple metadata extracted for {os.path.basename(file_path)}: {len(metadata)} attributes")
 
             # Update document metadata
             doc.metadata.update(metadata)

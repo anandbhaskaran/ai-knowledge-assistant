@@ -4,9 +4,16 @@ A lightweight AI-powered tool to help journalists research topics and draft evid
 
 ## Core Features
 
-1. **Idea Generation**: Convert topic into 3-5 evidence-backed article angles
-2. **Article Outline**: Create structured outline with attribution plan
-3. **Draft Article**: Generate 1000-2000 word draft with citations
+1. **Article Report Idea Generation**: Given a headline or news topic, the assistant should generate
+several article ideas consisting of a concise briefing (~250 words) summarizing key insights and
+facts, citing at least three relevant articles from reputable external sources or our own archive.
+2. **Outline Generation & Content Expansion**: Given a headline and 3–5 bullet-point notes or key
+ideas, the assistant should produce a structured article outline with clear H2 and H3 headings.
+3. **Draft Article Generation**: Using the headline and bullet points as input, the assistant should
+write a first-draft article of about 1,000–2,000 words. The draft must mimic the publication’s
+editorial tone and quality standard, incorporate factual content from the archive and external
+sources, and include appropriate citations for any referenced information. A skilled journalist
+must be able to finalize the report with minimal changes.
 
 ## Simplified Tech Stack
 

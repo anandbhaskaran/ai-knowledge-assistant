@@ -1,0 +1,32 @@
+# Renewable Energy Basics
+
+Renewable energy comes from sources that can be naturally replenished within a human lifetime, including solar, wind, hydroelectric, geothermal, and biomass energy. Unlike fossil fuels, which take millions of years to form and are being depleted much faster than they can be replenished, renewable energy sources are sustainable.
+
+## Solar Energy
+
+Solar energy harnesses the power of the sun through photovoltaic cells, which convert sunlight directly into electricity, or through concentrated solar power systems, which use mirrors to focus sunlight onto receivers that collect solar energy and convert it to heat.
+
+According to the International Energy Agency (IEA), solar photovoltaics is now the fastest-growing energy technology. The cost of solar panels has dropped by 89% since 2010, making solar energy competitive with or cheaper than fossil fuels in many regions.
+
+## Wind Energy
+
+Wind energy uses turbines to convert the kinetic energy of moving air into mechanical power, which is then converted into electricity through a generator. Wind farms can be built on land or offshore, where winds tend to be stronger and more constant.
+
+The Global Wind Energy Council reports that global wind power capacity reached 743 GW in 2020, with 93 GW added in that year alone. Wind energy now provides more than 7% of global electricity.
+
+## Hydroelectric Power
+
+Hydroelectric power generates electricity by harnessing the energy of flowing water. Typically, dams are constructed on rivers to store water in a reservoir. When released, the water flows through turbines, generating electricity.
+
+Hydroelectric power is the largest source of renewable electricity globally, accounting for about 16% of total electricity production and over 60% of all renewable electricity.
+
+## Challenges and Future Outlook
+
+Despite their environmental benefits, renewable energy sources face challenges:
+
+1. Intermittency: Solar and wind power depend on weather conditions.
+2. Storage: Efficient and affordable energy storage systems are needed to address intermittency.
+3. Grid integration: Existing power grids need updating to handle variable renewable energy sources.
+4. Land use: Some renewable installations require significant land area.
+
+However, technological improvements, cost reductions, and supportive policies are accelerating the transition to renewable energy. The IEA projects that renewable capacity will expand by over 60% between 2020 and 2026, becoming the largest source of global electricity generation by 2025.

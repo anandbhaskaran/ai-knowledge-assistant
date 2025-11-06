@@ -76,6 +76,12 @@ python simple_demo.py
 
 This will load the sample articles, create an index, and generate article ideas for the topic "renewable energy".
 
+You can also use the clear-and-ingest demo script which demonstrates both clearing data and ingestion:
+
+```bash
+python clear_and_ingest_demo.py
+```
+
 ### 1. Ingest Articles
 
 Before generating content, you need to ingest articles into the vector database:
@@ -85,8 +91,14 @@ Before generating content, you need to ingest articles into the vector database:
 mkdir -p data/articles
 # Add your articles to the data/articles directory
 
-# Run the ingestion script
+# Run the ingestion script (appends to existing data)
 python -c "from app.services.ingestion import ingest_articles; ingest_articles('data/articles')"
+
+# Run the ingestion script with clearing existing data (default behavior you want)
+python -c "from app.services.ingestion import ingest_articles; ingest_articles('data/articles', clear_data=True)"
+
+# Alternatively, use the ingestion module directly with --clear flag
+python -m app.services.ingestion data/articles --clear
 ```
 
 ### 2. Run the API Server

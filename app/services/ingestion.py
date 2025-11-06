@@ -8,7 +8,7 @@ from llama_index.core import Document, SimpleDirectoryReader
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.ingestion import IngestionPipeline
 
-from app.services.retriever import get_global_index
+from app.services.retriever import get_global_index, clear_collection
 from app.core.config import settings
 
 # Get logger
@@ -104,13 +104,14 @@ def extract_simple_metadata(file_path: str, content: str) -> Dict[str, Any]:
 
     return metadata
 
-def ingest_articles(directory_path: str, recursive: bool = True) -> bool:
+def ingest_articles(directory_path: str, recursive: bool = True, clear_data: bool = False) -> bool:
     """
     Ingest articles from a directory into the vector store
 
     Args:
         directory_path: Path to directory containing articles
         recursive: Whether to recursively search for files
+        clear_data: Whether to clear existing data before ingestion
 
     Returns:
         True if ingestion was successful, False otherwise
@@ -118,6 +119,11 @@ def ingest_articles(directory_path: str, recursive: bool = True) -> bool:
     if not os.path.exists(directory_path):
         logger.error(f"Directory not found: {directory_path}")
         return False
+
+    # Clear existing data if requested
+    if clear_data:
+        logger.info("Clearing existing vector store data before ingestion")
+        clear_collection()
 
     try:
         # Load documents from directory
@@ -172,12 +178,13 @@ def ingest_articles(directory_path: str, recursive: bool = True) -> bool:
         logger.error(f"Error ingesting documents: {e}")
         return False
 
-def ingest_file(file_path: str) -> bool:
+def ingest_file(file_path: str, clear_data: bool = False) -> bool:
     """
     Ingest a single file into the vector store
 
     Args:
         file_path: Path to the file
+        clear_data: Whether to clear existing data before ingestion
 
     Returns:
         True if ingestion was successful, False otherwise
@@ -185,6 +192,11 @@ def ingest_file(file_path: str) -> bool:
     if not os.path.exists(file_path):
         logger.error(f"File not found: {file_path}")
         return False
+
+    # Clear existing data if requested
+    if clear_data:
+        logger.info("Clearing existing vector store data before ingestion")
+        clear_collection()
 
     try:
         # Create directory containing the file
@@ -251,14 +263,15 @@ def main():
     parser = argparse.ArgumentParser(description="Ingest articles into the vector store")
     parser.add_argument("path", help="Path to file or directory to ingest")
     parser.add_argument("--recursive", "-r", action="store_true", help="Recursively process directories")
+    parser.add_argument("--clear", "-c", action="store_true", help="Clear existing data before ingestion")
 
     args = parser.parse_args()
 
     # Check if path is a file or directory
     if os.path.isfile(args.path):
-        success = ingest_file(args.path)
+        success = ingest_file(args.path, clear_data=args.clear)
     elif os.path.isdir(args.path):
-        success = ingest_articles(args.path, args.recursive)
+        success = ingest_articles(args.path, args.recursive, clear_data=args.clear)
     else:
         logger.error(f"Path not found: {args.path}")
         success = False

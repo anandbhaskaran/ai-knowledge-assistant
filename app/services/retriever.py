@@ -93,3 +93,36 @@ def get_global_index():
     if _index is None:
         _index = get_index()
     return _index
+
+# Function to clear collection data
+def clear_collection():
+    """Delete and recreate the collection to clear all data"""
+    try:
+        client_kwargs = {"url": settings.QDRANT_URL}
+
+        # Add API key if provided
+        if settings.QDRANT_API_KEY:
+            client_kwargs["api_key"] = settings.QDRANT_API_KEY
+
+        client = QdrantClient(**client_kwargs)
+
+        # Check if collection exists
+        collections = client.get_collections().collections
+        collection_names = [collection.name for collection in collections]
+
+        if settings.COLLECTION_NAME in collection_names:
+            # Delete the collection
+            client.delete_collection(collection_name=settings.COLLECTION_NAME)
+            logger.info(f"Collection '{settings.COLLECTION_NAME}' deleted")
+
+            # Reset the global index since collection has been deleted
+            global _index
+            _index = None
+
+            return True
+        else:
+            logger.info(f"Collection '{settings.COLLECTION_NAME}' does not exist, nothing to clear")
+            return False
+    except Exception as e:
+        logger.error(f"Failed to clear collection: {e}")
+        raise

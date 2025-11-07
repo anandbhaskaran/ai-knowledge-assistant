@@ -9,8 +9,10 @@ class TopicRequest(BaseModel):
 
 class OutlineRequest(BaseModel):
     """Request model for generating an article outline"""
-    topic: str = Field(..., description="Topic of the article")
+    headline: str = Field(..., description="Article headline")
     thesis: str = Field(..., description="Thesis statement or main argument")
+    key_facts: List[str] = Field(default_factory=list, description="Key facts to incorporate")
+    suggested_visualization: Optional[str] = Field(None, description="Suggested data visualization")
 
 class DraftRequest(BaseModel):
     """Request model for generating a draft article"""
@@ -44,9 +46,11 @@ class IdeasResponse(BaseModel):
 
 class OutlineResponse(BaseModel):
     """Response model for article outline"""
-    topic: str = Field(..., description="Topic of the article")
+    headline: str = Field(..., description="Article headline")
     thesis: str = Field(..., description="Thesis statement or main argument")
-    outline: str = Field(..., description="Generated outline in markdown format")
+    key_facts: Optional[List[str]] = Field(None, description="Key facts incorporated")
+    suggested_visualization: Optional[str] = Field(None, description="Suggested data visualization")
+    outline: str = Field(..., description="Generated outline in markdown format with placeholders")
     source_nodes: Optional[List[SourceNode]] = Field(None, description="Source nodes used for generation")
     warning: Optional[str] = Field(None, description="Warning about source quality or relevance")
 

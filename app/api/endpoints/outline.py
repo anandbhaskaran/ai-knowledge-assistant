@@ -12,15 +12,25 @@ router = APIRouter()
 @router.post("/outlines", response_model=OutlineResponse, status_code=200, tags=["outlines"])
 async def generate_outline(request: OutlineRequest):
     """
-    Generate an article outline based on a topic and thesis
+    Generate a detailed article outline based on a selected idea
 
-    - **topic**: The topic of the article
+    - **headline**: Article headline
     - **thesis**: The thesis statement or main argument
+    - **key_facts**: Key facts to incorporate (from idea generation)
+    - **suggested_visualization**: Suggested data visualization
+
+    Returns a detailed markdown outline with:
+    - Clear structure and headings
+    - Placeholder text indicating what to write in each section
+    - Citations to relevant sources
+    - Incorporation of editorial guidelines
     """
     try:
         result = outline_service.generate_outline(
-            topic=request.topic,
-            thesis=request.thesis
+            headline=request.headline,
+            thesis=request.thesis,
+            key_facts=request.key_facts,
+            suggested_visualization=request.suggested_visualization
         )
         return result
     except ValueError as e:

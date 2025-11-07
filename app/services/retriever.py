@@ -1,5 +1,5 @@
 from llama_index.core import VectorStoreIndex
-from llama_index.core.settings import Settings
+from llama_index.core.settings import Settings as LlamaSettings
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.openai import OpenAIEmbedding
 from qdrant_client import QdrantClient
@@ -58,7 +58,7 @@ def get_index():
     try:
         embed_model = get_embedding_model()
         # Set the embedding model in global settings
-        Settings._embed_model = embed_model
+        LlamaSettings._embed_model = embed_model
         vector_store = get_vector_store()
 
         index = VectorStoreIndex.from_vector_store(

@@ -23,14 +23,24 @@ class SourceNode(BaseModel):
     """Model for a source node"""
     text: str = Field(..., description="Text of the source node")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Metadata of the source node")
+    relevance_score: Optional[float] = Field(None, description="Relevance score of the source node")
+
+# Individual idea model
+class Idea(BaseModel):
+    """Model for a single article idea"""
+    headline: str = Field(..., description="Compelling headline for the article")
+    thesis: str = Field(..., description="Clear thesis statement (1-2 sentences)")
+    key_facts: List[str] = Field(..., description="List of 3 key facts with citations")
+    suggested_visualization: str = Field(..., description="Suggested data visualization")
 
 # Response models
 class IdeasResponse(BaseModel):
     """Response model for article ideas"""
     topic: str = Field(..., description="Topic of the ideas")
     num_ideas: int = Field(..., description="Number of ideas generated")
-    ideas: str = Field(..., description="Generated ideas in markdown format")
+    ideas: List[Idea] = Field(default_factory=list, description="Array of generated article ideas")
     source_nodes: Optional[List[SourceNode]] = Field(None, description="Source nodes used for generation")
+    warning: Optional[str] = Field(None, description="Warning about source quality or relevance")
 
 class OutlineResponse(BaseModel):
     """Response model for article outline"""
@@ -38,6 +48,7 @@ class OutlineResponse(BaseModel):
     thesis: str = Field(..., description="Thesis statement or main argument")
     outline: str = Field(..., description="Generated outline in markdown format")
     source_nodes: Optional[List[SourceNode]] = Field(None, description="Source nodes used for generation")
+    warning: Optional[str] = Field(None, description="Warning about source quality or relevance")
 
 class DraftResponse(BaseModel):
     """Response model for draft article"""
@@ -46,6 +57,7 @@ class DraftResponse(BaseModel):
     outline: str = Field(..., description="Article outline")
     draft: str = Field(..., description="Generated draft in markdown format")
     source_nodes: Optional[List[SourceNode]] = Field(None, description="Source nodes used for generation")
+    warning: Optional[str] = Field(None, description="Warning about source quality or relevance")
 
 # Health check response
 class HealthResponse(BaseModel):

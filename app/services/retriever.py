@@ -84,6 +84,41 @@ def get_query_engine(top_k=None, llm=None):
         logger.error(f"Failed to create query engine: {e}")
         raise
 
+# Filter results by relevance score
+def filter_by_relevance(source_nodes, min_score=None):
+    """
+    Filter source nodes by relevance score
+
+    Args:
+        source_nodes: List of source nodes with scores
+        min_score: Minimum relevance score threshold (default: from settings)
+
+    Returns:
+        Tuple of (filtered_nodes, quality_warning)
+    """
+    if min_score is None:
+        min_score = settings.MIN_RELEVANCE_SCORE
+
+    if not source_nodes:
+        return [], "No sources found in knowledge base"
+
+    # Filter by minimum score
+    filtered_nodes = [node for node in source_nodes if getattr(node, 'score', 0) >= min_score]
+
+    # Check quality and generate warnings
+    if not filtered_nodes:
+        max_score = max([getattr(node, 'score', 0) for node in source_nodes])
+        return [], f"No relevant sources found (best match score: {max_score:.2f}, threshold: {min_score:.2f})"
+
+    # Check if best results are below high quality threshold
+    best_score = max([getattr(node, 'score', 0) for node in filtered_nodes])
+    warning = None
+
+    if best_score < settings.HIGH_RELEVANCE_THRESHOLD:
+        warning = f"Limited relevant content found (best score: {best_score:.2f}). Results may be tangential to query."
+
+    return filtered_nodes, warning
+
 # Lazy-loaded global index instance
 _index = None
 

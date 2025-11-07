@@ -1,7 +1,7 @@
 import logging
 from typing import List, Dict, Any, Optional
 
-from app.services.retriever import get_query_engine
+from app.services.retriever import get_query_engine, filter_by_relevance
 from app.core.config import settings
 
 # Get logger
@@ -42,26 +42,36 @@ def generate_draft(
 
     query_engine = get_query_engine(top_k=top_k)
 
-    # System prompt
+    # System prompt with strict anti-hallucination instructions
     system_prompt = f"""
-    You are an AI Journalist Assistant. Write a {word_count}-word article
-    based on the provided topic and outline. Your article should:
+    You are an AI Journalist Assistant. Write a {word_count}-word article based on the topic and outline.
 
-    1. Follow the structure in the outline
-    2. Include a compelling headline and introduction
-    3. Support all claims with evidence from the retrieved sources
-    4. Format each citation as [Source, Title, Date]
-    5. Include at least 3 distinct sources
-    6. Maintain journalistic tone and objectivity
-    7. End with a conclusion summarizing key points
+    ⚠️ CRITICAL RULES - FOLLOW EXACTLY:
+    1. ONLY use information from the retrieved source documents provided below
+    2. If the retrieved documents do NOT contain sufficient information, you MUST respond:
+       "I cannot write a complete article on this topic. My knowledge base does not contain sufficient relevant articles."
+    3. NEVER fabricate quotes, statistics, studies, or sources
+    4. NEVER use your general knowledge - ONLY use the retrieved documents
+    5. Every fact, statistic, and claim MUST have a citation in the format [Source filename, Date]
+    6. If you cannot support a section with retrieved sources, acknowledge this clearly
+
+    If sufficient relevant sources ARE found, write an article that:
+
+    1. Follows the structure in the outline
+    2. Includes a compelling headline and introduction
+    3. Supports ALL claims with evidence from retrieved sources only
+    4. Includes at least 3 distinct sources (if available)
+    5. Maintains journalistic tone and objectivity
+    6. Ends with a conclusion summarizing key points from sources
 
     Format requirements:
     - Format the article in markdown
-    - Never invent quotes, statistics, or facts
-    - Only use information from the retrieved sources and properly cite them
-    - Convert relative dates (e.g., "last year") to exact dates
-    - Distribute citations throughout the article, not just at the end
+    - Format each citation as [Source filename, Date from metadata]
+    - Only cite sources that are actually provided below
+    - Convert relative dates to exact dates only if that information exists in sources
+    - Distribute citations throughout the article
     - Aim for approximately {word_count} words
+    - If sources are insufficient for full article, write what you can and note limitations
 
     Return your response in markdown format with citations.
     """
@@ -87,6 +97,25 @@ def generate_draft(
             system_prompt=system_prompt
         )
 
+        # Filter results by relevance
+        filtered_nodes, warning = filter_by_relevance(response.source_nodes)
+
+        # If no relevant sources found, return early with clear message
+        if not filtered_nodes:
+            logger.warning(f"No relevant sources found for topic: {topic}. {warning}")
+            return {
+                "topic": topic,
+                "word_count": word_count,
+                "outline": outline,
+                "draft": f"I cannot write an article on '{topic}'. {warning}",
+                "source_nodes": [],
+                "warning": warning
+            }
+
+        # Log quality warning if sources are marginal
+        if warning:
+            logger.warning(f"Quality warning for topic '{topic}': {warning}")
+
         # Extract and return draft
         return {
             "topic": topic,
@@ -96,10 +125,12 @@ def generate_draft(
             "source_nodes": [
                 {
                     "text": node.node.get_text(),
-                    "metadata": node.node.metadata
+                    "metadata": node.node.metadata,
+                    "relevance_score": getattr(node, 'score', None)
                 }
-                for node in response.source_nodes
-            ]
+                for node in filtered_nodes
+            ],
+            "warning": warning
         }
     except Exception as e:
         logger.error(f"Error generating draft: {e}")

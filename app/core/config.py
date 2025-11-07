@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     COLLECTION_NAME: str = os.getenv("COLLECTION_NAME", "articles")
     TOP_K_RESULTS: int = int(os.getenv("TOP_K_RESULTS", "5"))
 
+    # Relevance filtering settings
+    MIN_RELEVANCE_SCORE: float = float(os.getenv("MIN_RELEVANCE_SCORE", "0.75"))
+    HIGH_RELEVANCE_THRESHOLD: float = float(os.getenv("HIGH_RELEVANCE_THRESHOLD", "0.85"))
+
     # API settings
     API_TITLE: str = "AI Journalist Assistant"
     API_DESCRIPTION: str = "AI-powered tool for journalists to research and draft evidence-backed articles"

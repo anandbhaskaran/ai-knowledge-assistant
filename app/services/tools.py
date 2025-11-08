@@ -183,49 +183,6 @@ web_search_tool = FunctionTool.from_defaults(
 )
 
 
-def citation_formatter_tool_fn(source_name: str, source_title: str, date: str) -> str:
-    """
-    Format citation in standard [Source, Title, Date] format.
-
-    Args:
-        source_name: Name of the source/publication
-        source_title: Title of the article/document
-        date: Publication date
-
-    Returns:
-        Properly formatted citation string
-    """
-    try:
-        logger.info(f"Formatting citation: {source_name}, {source_title}, {date}")
-        return f"[{source_name}, {source_title}, {date}]"
-    except Exception as e:
-        logger.error(f"Error formatting citation: {e}")
-        return f"[{source_name}, {source_title}, {date}]"
-
-
-# Create citation formatter tool
-citation_formatter_tool = FunctionTool.from_defaults(
-    fn=citation_formatter_tool_fn,
-    name="citation_formatter",
-    description="""
-    Format citations in the standard format: [Source, Title, Date]
-
-    Use this tool to ensure all citations follow the publication's citation standard.
-    Every factual claim, statistic, or quote in the article MUST have a properly formatted citation.
-
-    Parameters:
-    - source_name: The publication or source name (e.g., "Nature", "The New York Times", "Internal Archive")
-    - source_title: The article or document title
-    - date: Publication date in format YYYY-MM-DD or readable format
-
-    Returns: Formatted citation string to place inline after the claim
-
-    Example: citation_formatter("Nature", "AI in Healthcare Study", "2024-11-01")
-    Returns: "[Nature, AI in Healthcare Study, 2024-11-01]"
-    """
-)
-
-
 def get_outline_tools() -> List[FunctionTool]:
     """
     Get the list of tools available for the outline agent
@@ -243,5 +200,5 @@ def get_draft_tools() -> List[FunctionTool]:
     Returns:
         List of LlamaIndex FunctionTool objects
     """
-    # Only archive retrieval - citations use simple [Source X] format
+    # Only archive retrieval - citations use simple [X] number format
     return [archive_retrieval_tool]

@@ -3,7 +3,7 @@ Draft article validation and quality checking
 """
 import logging
 import re
-from typing import List, Tuple, Dict, Any
+from typing import List, Dict, Any
 
 logger = logging.getLogger(__name__)
 
@@ -30,27 +30,6 @@ def count_words(text: str) -> int:
     return len(words)
 
 
-def extract_citations(draft: str) -> List[str]:
-    """
-    Extract all citations from draft (supports both [Source X] and [Source, Title, Date] formats)
-
-    Args:
-        draft: Article draft text
-
-    Returns:
-        List of citation strings
-    """
-    # Pattern: [Source X] or [Source, Title, Date]
-    pattern = r'\[(Source\s+\d+|[^\]]+)\]'
-    citations = re.findall(pattern, draft)
-
-    # Filter out markdown link text (which contains http/https)
-    citations = [c for c in citations if 'http' not in c.lower()]
-
-    logger.info(f"Extracted {len(citations)} citations from draft")
-    return citations
-
-
 def extract_source_numbers(draft: str) -> List[int]:
     """
     Extract source numbers from [X] citations
@@ -69,57 +48,7 @@ def extract_source_numbers(draft: str) -> List[int]:
     return numbers
 
 
-def validate_citations(draft: str, available_sources: List[Dict[str, Any]]) -> Tuple[bool, List[str]]:
-    """
-    Check that all citations reference available sources
-
-    Args:
-        draft: Article draft text
-        available_sources: List of source dictionaries with title, source, date fields
-
-    Returns:
-        Tuple of (all_valid, list_of_invalid_citations)
-    """
-    citations = extract_citations(draft)
-
-    if not citations:
-        logger.warning("No citations found in draft")
-        return False, []
-
-    # Build set of valid citation components from available sources
-    valid_sources = set()
-    for source in available_sources:
-        # Allow matching on any of: title, source name, or combination
-        valid_sources.add(source.get('title', '').lower())
-        valid_sources.add(source.get('source', '').lower())
-        valid_sources.add(f"{source.get('source', '')} {source.get('title', '')}".lower())
-
-    # Check each citation
-    invalid_citations = []
-    for citation in citations:
-        # Parse citation
-        parts = [p.strip() for p in citation.split(',')]
-
-        if len(parts) < 2:
-            invalid_citations.append(citation)
-            continue
-
-        # Check if source or title appears in valid sources
-        citation_lower = citation.lower()
-        found = any(vs in citation_lower for vs in valid_sources if vs)
-
-        if not found:
-            invalid_citations.append(citation)
-
-    all_valid = len(invalid_citations) == 0
-
-    if invalid_citations:
-        logger.warning(f"Found {len(invalid_citations)} potentially invalid citations")
-
-    return all_valid, invalid_citations
-
-
-def validate_editorial_compliance(draft: str, guidelines: str) -> float:
+def validate_editorial_compliance(draft: str) -> float:
     """
     Check draft compliance with editorial guidelines
 
@@ -131,7 +60,6 @@ def validate_editorial_compliance(draft: str, guidelines: str) -> float:
 
     Args:
         draft: Article draft text
-        guidelines: Editorial guidelines text
 
     Returns:
         Compliance score (0-1)
@@ -176,11 +104,11 @@ def validate_editorial_compliance(draft: str, guidelines: str) -> float:
             score -= 0.15
 
     # Check 3: Citations present
-    citations = extract_citations(draft)
+    citation_numbers = extract_source_numbers(draft)
     word_count = count_words(draft)
 
     if word_count > 500:  # Only check for substantial drafts
-        citation_ratio = len(citations) / (word_count / 100)  # Citations per 100 words
+        citation_ratio = len(citation_numbers) / (word_count / 100)  # Citations per 100 words
 
         if citation_ratio < 0.5:  # Less than 1 citation per 200 words
             score -= 0.2

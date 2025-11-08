@@ -2,6 +2,7 @@
 Agent-based draft article generation using archive retrieval and citation tools
 """
 import logging
+import re
 from typing import List, Dict, Any, Optional
 from llama_index.core.agent import ReActAgent
 from llama_index.llms.openai import OpenAI
@@ -73,8 +74,6 @@ def clean_draft_response(draft: str, headline: str) -> str:
     Returns:
         Cleaned article text
     """
-    import re
-
     # Check if draft starts with headline
     if draft.startswith(f"# {headline}"):
         return draft
@@ -316,7 +315,7 @@ Just write the article directly. Start NOW with "# {headline}" followed by the a
         logger.info(f"Draft generated: {word_count} words")
 
         # Validate editorial compliance (on expanded version)
-        compliance_score = validate_editorial_compliance(draft_expanded, editorial_guidelines)
+        compliance_score = validate_editorial_compliance(draft_expanded)
 
         # Generate warnings
         warnings = []

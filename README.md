@@ -5,15 +5,16 @@ A lightweight AI-powered tool to help journalists research topics and draft evid
 ## Core Features
 
 1. **Idea Generation**: Convert topic into 3-5 evidence-backed article angles
-2. **Article Outline**: Create structured outline with attribution plan
+2. **Article Outline**: Agent-based outline with archive + web sources, ranked by relevance
 3. **Draft Article**: Generate 1000-2000 word draft with citations
 
 ## Tech Stack
 
 * **Python 3.11+**
-* **LlamaIndex**: RAG framework for retrieval and citation
-* **Qdrant**: Vector database (local Docker or cloud)
-* **FastAPI**: Simple API server
+* **LlamaIndex**: RAG framework with ReActAgent for multi-source retrieval
+* **Qdrant**: Vector database for article archive
+* **Tavily API**: Real-time web search for current information
+* **FastAPI**: API server
 * **OpenAI API**: For embeddings and text generation
 
 ## Installation
@@ -40,12 +41,20 @@ pip install -r requirements.txt
 
 Create or update the `.env` file in the project root:
 
-```
+```bash
+# Required API Keys
 OPENAI_API_KEY=your-openai-api-key
+TAVILY_API_KEY=your-tavily-api-key  # Get free key at https://tavily.com
+
+# Qdrant Configuration
 QDRANT_URL=http://localhost:6333  # Or your Qdrant cloud URL
 QDRANT_API_KEY=your-qdrant-api-key-if-using-cloud
+
+# Settings
 COLLECTION_NAME=articles
 TOP_K_RESULTS=5
+MIN_RELEVANCE_SCORE=0.75
+HIGH_RELEVANCE_THRESHOLD=0.85
 ```
 
 ### 4. Set Up Vector Database
@@ -128,13 +137,27 @@ The response will include the generated ideas in markdown format and source info
 
 #### Generate Article Outline
 
+Uses AI agent with archive retrieval + web search to create structured outlines with ranked sources.
+
 ```bash
 curl -X POST http://127.0.0.1:8000/api/v1/outlines \
   -H "Content-Type: application/json" \
-  -d '{"topic": "renewable energy", "thesis": "Solar energy adoption is accelerating in rural communities due to decreasing costs and policy incentives"}'
+  -d '{
+    "headline": "Solar Energy Transforms Rural Communities",
+    "thesis": "Solar energy adoption is accelerating in rural communities due to decreasing costs and policy incentives",
+    "key_facts": [
+      "Solar panel costs dropped 90% since 2010",
+      "Rural solar installations increased 150% in 2023"
+    ],
+    "suggested_visualization": "Map showing rural solar adoption rates"
+  }'
 ```
 
-Note: The outline endpoint is implemented but may need updating to use the latest LlamaIndex APIs.
+**Returns:**
+- Structured markdown outline with H2/H3 headings
+- Ranked sources from archive (Qdrant) and web (Tavily)
+- Each source includes: title, source, source_type ('archive'/'web'), date, URL, relevance_score, excerpt
+- Editorial guidelines compliance
 
 #### Generate Draft Article
 
@@ -162,22 +185,26 @@ knowledge-assistant/
 │   ├── api/
 │   │   └── endpoints/
 │   │       ├── ideas.py
-│   │       ├── outline.py
+│   │       ├── outline.py         # Agent-based outline generation
 │   │       └── draft.py
 │   ├── core/
-│   │   ├── config.py
+│   │   ├── config.py              # Settings with TAVILY_API_KEY
 │   │   └── logging.py
 │   ├── models/
-│   │   └── schemas.py
+│   │   └── schemas.py             # Source with source_type field
 │   ├── services/
-│   │   ├── retriever.py
+│   │   ├── retriever.py           # Archive retrieval from Qdrant
+│   │   ├── tools.py               # Archive + web search tools
+│   │   ├── outline_agent.py       # ReActAgent for outline generation
 │   │   ├── ingestion.py
 │   │   ├── ideas.py
-│   │   ├── outline.py
+│   │   ├── outline.py             # Legacy (can be removed)
 │   │   └── draft.py
 │   └── main.py
 ├── data/
-│   └── articles/
+│   ├── articles/                  # Article archive
+│   └── guidlines/
+│       └── editorial-guidelines.md
 ├── tests/
 ├── .env
 ├── requirements.txt
@@ -205,14 +232,29 @@ The system automatically extracts rich metadata from article content during inge
 
 This rich metadata enables better article retrieval, more precise citations, and improved contextual understanding by the AI.
 
+## Key Implementation Details
+
+### Agent-Based Outline Generation
+- Uses LlamaIndex ReActAgent to intelligently combine multiple data sources
+- Archive retrieval tool searches Qdrant vector database for historical context
+- Web search tool uses Tavily API for real-time information
+- All sources ranked by relevance score (0-1) and tagged with source_type
+- Follows editorial guidelines from `data/guidlines/editorial-guidelines.md`
+
+### Source Classification
+Each source includes:
+- `source_type`: 'archive' or 'web'
+- `relevance_score`: Vector similarity (archive) or search relevance (web)
+- Complete metadata: title, source, date, URL, text excerpt
+
 ## Future Improvements
 
-* Add a web UI for journalists
+* Add web UI for journalists
 * Implement proper chunking strategies for different document types
 * Add evaluation framework for generated content
 * Enhance citation tracking and verification
-* Connect to external sources (news APIs, research databases)
 * Expand metadata extraction with NER models
+* Add more specialized tools (e.g., fact-checking, expert databases)
 
 ## License
 

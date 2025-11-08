@@ -1,26 +1,20 @@
-# AI Journalist Assistant (Minimal Version)
+# AI Journalist Assistant
 
-A lightweight AI-powered tool to help journalists research topics and draft evidence-backed articles using LlamaIndex and Qdrant.
+A lightweight AI-powered tool to help journalists research topics and draft evidence-backed articles using LlamaIndex, Qdrant, and Tavily.
 
 ## Core Features
 
-1. **Article Report Idea Generation**: Given a headline or news topic, the assistant should generate
-several article ideas consisting of a concise briefing (~250 words) summarizing key insights and
-facts, citing at least three relevant articles from reputable external sources or our own archive.
-2. **Outline Generation & Content Expansion**: Given a headline and 3–5 bullet-point notes or key
-ideas, the assistant should produce a structured article outline with clear H2 and H3 headings.
-3. **Draft Article Generation**: Using the headline and bullet points as input, the assistant should
-write a first-draft article of about 1,000–2,000 words. The draft must mimic the publication’s
-editorial tone and quality standard, incorporate factual content from the archive and external
-sources, and include appropriate citations for any referenced information. A skilled journalist
-must be able to finalize the report with minimal changes.
+1. **Article Idea Generation**: Generate 3-5 evidence-backed article angles with citations from archive sources
+2. **Outline Generation (Agent-Based)**: AI agent combines archive + web sources to create structured outlines with H2/H3 headings, ranked sources, and editorial guidelines compliance
+3. **Draft Article Generation**: Generate 1,000-2,000 word drafts with proper citations and editorial tone
 
-## Simplified Tech Stack
+## Tech Stack
 
 * **Python 3.11+**
-* **LlamaIndex**: RAG framework for retrieval and citation
-* **Qdrant**: Vector database (local Docker or cloud)
-* **FastAPI**: Simple API server
+* **LlamaIndex**: RAG framework with ReActAgent for multi-source retrieval
+* **Qdrant**: Vector database for article archive
+* **Tavily API**: Real-time web search for current information
+* **FastAPI**: API server
 * **OpenAI API**: For embeddings and text generation
 
 ## Minimal Setup
@@ -32,17 +26,26 @@ must be able to finalize the report with minimal changes.
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Install core dependencies
-pip install llama-index qdrant-client fastapi uvicorn openai python-dotenv
+# Install dependencies
+pip install -r requirements.txt
 ```
 
 ### 2. Configuration
 
 Create `.env` file:
 
-```
-OPENAI_API_KEY="your-api-key"
+```bash
+# Required API Keys
+OPENAI_API_KEY="your-openai-api-key"
+TAVILY_API_KEY="your-tavily-api-key"  # Get free key at https://tavily.com
+
+# Qdrant Configuration
 QDRANT_URL="http://localhost:6333"
+
+# Settings
+COLLECTION_NAME="articles"
+TOP_K_RESULTS=5
+MIN_RELEVANCE_SCORE=0.75
 ```
 
 ### 3. Vector Database
@@ -52,124 +55,114 @@ QDRANT_URL="http://localhost:6333"
 docker run -p 6333:6333 qdrant/qdrant
 ```
 
-## Basic Implementation
+## Implementation Overview
 
-### Initialize Retriever
+### Agent-Based Outline Generation
 
-```python
-# retriever.py
-import os
-from llama_index.core import VectorStoreIndex
-from llama_index.vector_stores.qdrant import QdrantVectorStore
-from qdrant_client import QdrantClient
-from dotenv import load_dotenv
+The outline endpoint uses a **ReActAgent** with two specialized tools:
 
-load_dotenv()
+1. **Archive Retrieval Tool** (`app/services/tools.py`)
+   - Searches Qdrant vector database for relevant historical articles
+   - Returns sources with relevance scores from vector similarity
+   - Tagged as `source_type: 'archive'`
 
-# Connect to Qdrant
-client = QdrantClient(url=os.environ["QDRANT_URL"])
-vector_store = QdrantVectorStore(client, collection_name="articles")
+2. **Web Search Tool** (`app/services/tools.py`)
+   - Uses Tavily API for real-time web search
+   - Returns current information with relevance scores
+   - Tagged as `source_type: 'web'`
 
-# Create vector index
-index = VectorStoreIndex.from_vector_store(vector_store)
+The agent intelligently combines both sources, ranks them by relevance, and generates structured outlines following editorial guidelines from `data/guidlines/editorial-guidelines.md`.
 
-# Get query engine
-query_engine = index.as_query_engine(similarity_top_k=5)
+### Key Files
+
+- `app/services/outline_agent.py`: ReActAgent implementation
+- `app/services/tools.py`: Archive + web search tools
+- `app/api/endpoints/outline.py`: FastAPI endpoint
+- `app/models/schemas.py`: Source model with source_type field
+
+### Data Ingestion
+
+```bash
+# Ingest articles into Qdrant
+python -m app.services.ingestion data/articles --clear
 ```
 
-### Simple Idea Generator
+## Usage
 
-```python
-# ideas.py
-from retriever import query_engine
+### 1. Start Services
 
-def generate_ideas(topic):
-    # System prompt
-    system_prompt = """
-    You are an AI Journalist Assistant. Generate 3 article ideas about the
-    given topic. Each idea should have:
-    - A clear thesis statement
-    - 3 key facts with citations from retrieved evidence
-    - A suggested data visualization
+```bash
+# Start Qdrant (in one terminal)
+docker run -p 6333:6333 qdrant/qdrant
 
-    Always provide sources for your facts. Never invent information.
-    """
-
-    # Generate ideas with citations
-    response = query_engine.query(
-        f"Generate article ideas about: {topic}",
-        system_prompt=system_prompt
-    )
-
-    return response.response
+# Start API server (in another terminal)
+uvicorn app.main:app --reload
 ```
 
-### Minimal API
+### 2. Generate Outline
 
-```python
-# api.py
-from fastapi import FastAPI
-from pydantic import BaseModel
-import ideas
-
-app = FastAPI()
-
-class TopicRequest(BaseModel):
-    topic: str
-
-@app.post("/ideas")
-def generate_ideas(request: TopicRequest):
-    return {"ideas": ideas.generate_ideas(request.topic)}
-
-# Run with: uvicorn api:app --reload
+```bash
+curl -X POST http://localhost:8000/api/v1/outlines \
+  -H "Content-Type: application/json" \
+  -d '{
+    "headline": "AI Transforms Healthcare Diagnostics",
+    "thesis": "AI is revolutionizing medical diagnostics through improved accuracy and efficiency",
+    "key_facts": [
+      "95% accuracy in cancer detection",
+      "50% reduction in diagnosis time"
+    ],
+    "suggested_visualization": "Chart comparing AI vs traditional diagnostic accuracy"
+  }'
 ```
 
-## Basic Data Ingestion
+### 3. Response Format
 
-```python
-# ingest.py
-import os
-import glob
-from llama_index.core import SimpleDirectoryReader, Document
-from retriever import client, index
-
-def ingest_articles(directory_path):
-    # Load documents from directory
-    documents = SimpleDirectoryReader(directory_path).load_data()
-
-    # Add metadata
-    for doc in documents:
-        doc.metadata = {
-            "source": doc.metadata.get("file_path", ""),
-            "date": "2025-01-01"  # Simple default date
-        }
-
-    # Create/update the index
-    index.insert_documents(documents)
-    print(f"Ingested {len(documents)} documents")
-
-# Usage: ingest_articles("data/articles")
+```json
+{
+  "headline": "...",
+  "thesis": "...",
+  "outline": "## Headline\n...\n## Introduction\n...",
+  "sources": [
+    {
+      "title": "AI Diagnostics Study 2024",
+      "source": "nature.com",
+      "source_type": "web",
+      "relevance_score": 0.92,
+      "date": "2024-11-01",
+      "url": "https://...",
+      "text": "..."
+    },
+    {
+      "title": "Healthcare AI Report",
+      "source": "Internal Archive",
+      "source_type": "archive",
+      "relevance_score": 0.87,
+      "date": "2024-06-15",
+      "url": "https://...",
+      "text": "..."
+    }
+  ],
+  "warning": null
+}
 ```
 
 ## Citation Standards
 
 * Format: `[Source, Title, Date]`
 * Minimum: 3 distinct sources per article
-* Convert relative dates to exact dates
+* All sources ranked by relevance score (0-1)
+* Each source tagged with source_type ('archive' or 'web')
 
-## Running the Minimal Version
+## Documentation
 
-1. Start Qdrant database
-2. Ingest sample articles
-3. Run the API server
-4. Test with a curl request:
-   ```
-   curl -X POST localhost:8000/ideas -d '{"topic":"renewable energy"}'
-   ```
+- **AGENT_OUTLINE.md**: Detailed agent architecture and flow
+- **WEB_SEARCH_SETUP.md**: Tavily integration setup guide
+- **README.md**: Full installation and usage guide
 
 ## Future Improvements
 
-* Add outline and draft generation endpoints
-* Implement proper chunking strategy
-* Add evaluation framework
-* Enhance citation tracking
+* Implement draft article generation with agent
+* Add proper chunking strategy for long documents
+* Add evaluation framework for generated content
+* Enhance citation tracking and verification
+* Add more specialized tools (fact-checking, expert databases)

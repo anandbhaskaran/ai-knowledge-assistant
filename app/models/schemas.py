@@ -27,6 +27,17 @@ class SourceNode(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Metadata of the source node")
     relevance_score: Optional[float] = Field(None, description="Relevance score of the source node")
 
+# Enhanced source model for agent-based retrieval
+class Source(BaseModel):
+    """Model for a retrieved source with full metadata"""
+    title: str = Field(..., description="Title of the source")
+    source: str = Field(..., description="Source name or publication")
+    source_type: str = Field(..., description="Type of source: 'archive' or 'web'")
+    date: str = Field(..., description="Publication date")
+    url: str = Field(..., description="URL of the source")
+    relevance_score: Optional[float] = Field(None, description="Relevance score (0-1)")
+    text: str = Field(..., description="Excerpt or full text of the source")
+
 # Individual idea model
 class Idea(BaseModel):
     """Model for a single article idea"""
@@ -51,7 +62,7 @@ class OutlineResponse(BaseModel):
     key_facts: Optional[List[str]] = Field(None, description="Key facts incorporated")
     suggested_visualization: Optional[str] = Field(None, description="Suggested data visualization")
     outline: str = Field(..., description="Generated outline in markdown format with placeholders")
-    source_nodes: Optional[List[SourceNode]] = Field(None, description="Source nodes used for generation")
+    sources: Optional[List[Source]] = Field(None, description="Ranked sources with relevance scores from archive and web, sorted by relevance (highest first)")
     warning: Optional[str] = Field(None, description="Warning about source quality or relevance")
 
 class DraftResponse(BaseModel):

@@ -14,12 +14,6 @@ class OutlineRequest(BaseModel):
     key_facts: List[str] = Field(default_factory=list, description="Key facts to incorporate")
     suggested_visualization: Optional[str] = Field(None, description="Suggested data visualization")
 
-class DraftRequest(BaseModel):
-    """Request model for generating a draft article"""
-    topic: str = Field(..., description="Topic of the article")
-    outline: str = Field(..., description="Article outline")
-    word_count: int = Field(1500, description="Target word count (500-2000)", ge=500, le=2000)
-
 # Source node model
 class SourceNode(BaseModel):
     """Model for a source node"""
@@ -37,6 +31,16 @@ class Source(BaseModel):
     url: str = Field(..., description="URL of the source")
     relevance_score: Optional[float] = Field(None, description="Relevance score (0-1)")
     text: str = Field(..., description="Excerpt or full text of the source")
+    citation_number: Optional[int] = Field(None, description="Citation number if used in draft (1, 2, 3, etc.)")
+
+class DraftRequest(BaseModel):
+    """Request model for generating a draft article"""
+    headline: str = Field(..., description="Article headline")
+    thesis: str = Field(..., description="Thesis statement or main argument")
+    outline: str = Field(..., description="Article outline in markdown format (from outline endpoint)")
+    sources: Optional[List[Source]] = Field(None, description="Sources from outline endpoint to use for draft")
+    key_facts: Optional[List[str]] = Field(None, description="Key facts to incorporate")
+    target_word_count: int = Field(1500, description="Target word count (1000-2000)", ge=1000, le=2000)
 
 # Individual idea model
 class Idea(BaseModel):
@@ -67,12 +71,15 @@ class OutlineResponse(BaseModel):
 
 class DraftResponse(BaseModel):
     """Response model for draft article"""
-    topic: str = Field(..., description="Topic of the article")
-    word_count: int = Field(..., description="Target word count")
-    outline: str = Field(..., description="Article outline")
-    draft: str = Field(..., description="Generated draft in markdown format")
-    source_nodes: Optional[List[SourceNode]] = Field(None, description="Source nodes used for generation")
-    warning: Optional[str] = Field(None, description="Warning about source quality or relevance")
+    headline: str = Field(..., description="Article headline")
+    thesis: str = Field(..., description="Thesis statement")
+    draft: str = Field(..., description="Generated draft article in markdown format with inline citations")
+    word_count: int = Field(..., description="Actual word count of the draft")
+    sources_used: Optional[List[Source]] = Field(None, description="Sources actually cited in the draft")
+    sources_available: Optional[List[Source]] = Field(None, description="Sources provided but not cited")
+    sections_generated: Optional[List[str]] = Field(None, description="List of H2 section headings generated")
+    editorial_compliance_score: Optional[float] = Field(None, description="Editorial compliance score (0-1)")
+    warning: Optional[str] = Field(None, description="Warnings about quality, word count, or compliance")
 
 # Health check response
 class HealthResponse(BaseModel):

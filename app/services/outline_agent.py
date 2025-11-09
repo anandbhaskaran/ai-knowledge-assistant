@@ -109,16 +109,18 @@ def generate_outline_with_agent(
     headline: str,
     thesis: str,
     key_facts: List[str] = None,
-    suggested_visualization: str = None
+    suggested_visualization: str = None,
+    enable_web_search: bool = True
 ) -> Dict[str, Any]:
     """
-    Generate an article outline using an agent with archive and web search tools
+    Generate an article outline using an agent with archive and optionally web search tools
 
     Args:
         headline: Article headline
         thesis: The thesis statement or main argument
         key_facts: Key facts to incorporate in the outline
         suggested_visualization: Suggested data visualization
+        enable_web_search: Whether to enable web search for current information (default: True)
 
     Returns:
         Dictionary containing outline, sources, and metadata
@@ -141,8 +143,8 @@ def generate_outline_with_agent(
         temperature=0.7
     )
 
-    # Get tools
-    tools = get_outline_tools()
+    # Get tools (conditionally include web search)
+    tools = get_outline_tools(enable_web_search=enable_web_search)
 
     # Create agent
     agent = ReActAgent.from_tools(
@@ -155,6 +157,23 @@ def generate_outline_with_agent(
     # Build prompt
     key_facts_text = "\n".join([f"- {fact}" for fact in key_facts]) if key_facts else "None provided"
     viz_text = suggested_visualization if suggested_visualization else "None suggested"
+
+    # Build tool instructions based on what's available
+    web_search_instructions = ""
+    if enable_web_search:
+        web_search_instructions = """
+2. Use the web_search tool for very recent information and external perspectives
+   - Find breaking news and recent developments
+   - Get diverse viewpoints from authoritative sources
+   - Gather current statistics and data
+   - Find expert opinions from reputable publications
+"""
+    else:
+        web_search_instructions = """
+2. Web search is disabled for this request - rely only on archive sources
+   - Use multiple archive searches with different queries if needed
+   - Extract comprehensive information from available archive sources
+"""
 
     agent_prompt = f"""
 You are an AI Journalist Assistant creating a detailed article outline. Follow the editorial guidelines strictly.
@@ -176,11 +195,7 @@ YOUR TASK:
    - Look for expert opinions and analysis
    - Retrieve multiple perspectives
 
-2. Use the web_search tool for very recent information and external perspectives
-   - Find breaking news and recent developments
-   - Get diverse viewpoints from authoritative sources
-   - Gather current statistics and data
-   - Find expert opinions from reputable publications
+{web_search_instructions}
 
 3. Based on retrieved sources, create a detailed markdown outline with this structure:
 
@@ -258,10 +273,12 @@ Begin by using the archive_retrieval tool to gather information.
             archive_output = archive_retrieval_tool_fn(search_query, top_k=10)
             archive_sources = extract_sources_from_tool_output(archive_output, source_type="archive")
 
-            # Get web sources
-            logger.info("Extracting web search sources...")
-            web_output = web_search_tool_fn(search_query, max_results=5)
-            web_sources = extract_sources_from_tool_output(web_output, source_type="web")
+            # Get web sources only if web search is enabled
+            web_sources = []
+            if enable_web_search:
+                logger.info("Extracting web search sources...")
+                web_output = web_search_tool_fn(search_query, max_results=5)
+                web_sources = extract_sources_from_tool_output(web_output, source_type="web")
 
             # Combine and rank all sources by relevance score
             all_sources = archive_sources + web_sources

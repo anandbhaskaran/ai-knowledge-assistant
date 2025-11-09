@@ -183,22 +183,34 @@ web_search_tool = FunctionTool.from_defaults(
 )
 
 
-def get_outline_tools() -> List[FunctionTool]:
+def get_outline_tools(enable_web_search: bool = True) -> List[FunctionTool]:
     """
     Get the list of tools available for the outline agent
 
+    Args:
+        enable_web_search: Whether to include web search tool (default: True)
+
     Returns:
         List of LlamaIndex FunctionTool objects
     """
-    return [archive_retrieval_tool, web_search_tool]
+    tools = [archive_retrieval_tool]
+    if enable_web_search:
+        tools.append(web_search_tool)
+    return tools
 
 
-def get_draft_tools() -> List[FunctionTool]:
+def get_draft_tools(enable_web_search: bool = False) -> List[FunctionTool]:
     """
     Get the list of tools available for the draft agent
 
+    Args:
+        enable_web_search: Whether to include web search tool (default: False)
+
     Returns:
         List of LlamaIndex FunctionTool objects
     """
-    # Only archive retrieval - citations use simple [X] number format
-    return [archive_retrieval_tool]
+    # Archive retrieval is always available - citations use simple [X] number format
+    tools = [archive_retrieval_tool]
+    if enable_web_search:
+        tools.append(web_search_tool)
+    return tools

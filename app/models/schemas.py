@@ -13,6 +13,7 @@ class OutlineRequest(BaseModel):
     thesis: str = Field(..., description="Thesis statement or main argument")
     key_facts: List[str] = Field(default_factory=list, description="Key facts to incorporate")
     suggested_visualization: Optional[str] = Field(None, description="Suggested data visualization")
+    enable_web_search: bool = Field(True, description="Enable web search for current information (default: True)")
 
 # Source node model
 class SourceNode(BaseModel):
@@ -41,6 +42,7 @@ class DraftRequest(BaseModel):
     sources: Optional[List[Source]] = Field(None, description="Sources from outline endpoint to use for draft")
     key_facts: Optional[List[str]] = Field(None, description="Key facts to incorporate")
     target_word_count: int = Field(1500, description="Target word count (1000-2000)", ge=1000, le=2000)
+    enable_web_search: bool = Field(False, description="Enable web search for additional sources (default: False)")
 
 # Individual idea model
 class Idea(BaseModel):

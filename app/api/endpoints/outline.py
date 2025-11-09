@@ -40,7 +40,8 @@ async def generate_outline(request: OutlineRequest):
             headline=request.headline,
             thesis=request.thesis,
             key_facts=request.key_facts,
-            suggested_visualization=request.suggested_visualization
+            suggested_visualization=request.suggested_visualization,
+            enable_web_search=request.enable_web_search
         )
 
         logger.info(f"Outline generated successfully with {len(result.get('sources', []))} sources")

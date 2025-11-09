@@ -119,7 +119,8 @@ def generate_draft_with_agent(
     outline: str,
     sources: List[Dict[str, Any]],
     target_word_count: int = 1500,
-    key_facts: Optional[List[str]] = None
+    key_facts: Optional[List[str]] = None,
+    enable_web_search: bool = False
 ) -> Dict[str, Any]:
     """
     Generate article draft using ReActAgent with citation tools
@@ -131,6 +132,7 @@ def generate_draft_with_agent(
         sources: List of sources from outline endpoint
         target_word_count: Target word count (1000-2000)
         key_facts: Optional key facts to incorporate
+        enable_web_search: Whether to enable web search for additional sources (default: False)
 
     Returns:
         Dictionary containing draft, word_count, sources_used, and metadata
@@ -168,8 +170,8 @@ You NEVER say "here is the article" or provide explanations - you just write the
         system_prompt=system_prompt
     )
 
-    # Get tools
-    tools = get_draft_tools()
+    # Get tools (conditionally include web search)
+    tools = get_draft_tools(enable_web_search=enable_web_search)
 
     # Create agent
     agent = ReActAgent.from_tools(
@@ -251,6 +253,7 @@ WRITING INSTRUCTIONS:
 
 6. WHEN TO USE TOOLS:
    - Use archive_retrieval tool ONLY if you need additional specific information not in provided sources
+   - {"Use web_search tool for very recent information if needed" if enable_web_search else "Web search is disabled - use only provided sources and archive"}
    - Do NOT use tools unnecessarily - prioritize the provided sources
    - Remember: citations are simply [1], [2], [3], etc. - no tool needed
 

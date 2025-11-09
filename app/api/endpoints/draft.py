@@ -60,7 +60,8 @@ async def generate_draft(request: DraftRequest):
             outline=request.outline,
             sources=sources,
             target_word_count=request.target_word_count,
-            key_facts=request.key_facts
+            key_facts=request.key_facts,
+            enable_web_search=request.enable_web_search
         )
 
         logger.info(f"Draft generated: {result['word_count']} words, "

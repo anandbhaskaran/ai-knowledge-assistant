@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Search, AlertCircle, Lightbulb, TrendingUp, DollarSign, Bitcoin, Cpu } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, AlertCircle, Lightbulb, TrendingUp, DollarSign, Bitcoin, Cpu, Loader2 } from 'lucide-react';
 import { generateIdeas } from '../services/api';
 import type { IdeasResponse, Idea } from '../types/api';
 import IdeaCard from './IdeaCard';
+import IdeaCardSkeleton from './IdeaCardSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
@@ -19,20 +20,65 @@ const TOPIC_CATEGORIES = [
   { label: 'Technology', icon: Cpu, color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
 ];
 
+const LOADING_MESSAGES = [
+  { message: "Searching archive sources...", icon: "🔍" },
+  { message: "Analyzing relevant articles...", icon: "📚" },
+  { message: "Generating article angles...", icon: "✨" },
+  { message: "Verifying citations...", icon: "✓" },
+  { message: "Almost done...", icon: "⏳" },
+];
+
 export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) {
   const [topic, setTopic] = useState('');
   const [numIdeas, setNumIdeas] = useState(3);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<IdeasResponse | null>(null);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  // Progressive loading messages and progress bar
+  useEffect(() => {
+    if (!loading) {
+      setLoadingMessageIndex(0);
+      setProgress(0);
+      return;
+    }
+
+    const messageInterval = setInterval(() => {
+      setLoadingMessageIndex((prev) => {
+        if (prev < LOADING_MESSAGES.length - 1) {
+          return prev + 1;
+        }
+        return prev;
+      });
+    }, 2000); // Change message every 2 seconds
+
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev < 95) {
+          return prev + 1;
+        }
+        return prev;
+      });
+    }, 100); // Update progress every 100ms
+
+    return () => {
+      clearInterval(messageInterval);
+      clearInterval(progressInterval);
+    };
+  }, [loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setLoadingMessageIndex(0);
+    setProgress(0);
 
     try {
       const response = await generateIdeas(topic, numIdeas);
+      setProgress(100);
       setResult(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -49,9 +95,12 @@ export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) 
     setTopic(idea.headline);
     setLoading(true);
     setError(null);
+    setLoadingMessageIndex(0);
+    setProgress(0);
 
     try {
       const response = await generateIdeas(idea.headline, numIdeas);
+      setProgress(100);
       setResult(response);
       // Scroll to results
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -93,7 +142,8 @@ export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) 
                       key={category.label}
                       type="button"
                       onClick={() => handleCategoryClick(category.label)}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${category.color} ${
+                      disabled={loading}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${category.color} ${
                         topic === category.label ? 'ring-2 ring-offset-2 ring-primary' : ''
                       }`}
                     >
@@ -115,6 +165,7 @@ export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) 
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="e.g., Artificial Intelligence in Healthcare..."
                 className="h-12 text-base"
+                disabled={loading}
                 required
               />
             </div>
@@ -135,7 +186,8 @@ export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) 
                 max="5"
                 value={numIdeas}
                 onChange={(e) => setNumIdeas(Number(e.target.value))}
-                className="w-full h-2.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary"
+                disabled={loading}
+                className="w-full h-2.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <div className="flex justify-between text-xs text-gray-500">
                 <span>1</span>
@@ -150,6 +202,27 @@ export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) 
               </div>
             )}
 
+            {loading && (
+              <div className="space-y-4 p-5 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 rounded-xl border border-blue-200/50 animate-slide-up">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-gray-900">
+                      <span className="mr-2">{LOADING_MESSAGES[loadingMessageIndex].icon}</span>
+                      {LOADING_MESSAGES[loadingMessageIndex].message}
+                    </p>
+                  </div>
+                  <span className="text-xs font-medium text-gray-600">{progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-primary to-primary/80 h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             <Button
               type="submit"
               disabled={loading}
@@ -158,7 +231,7 @@ export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) 
             >
               {loading ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                   <span>Generating Ideas...</span>
                 </>
               ) : (
@@ -172,7 +245,25 @@ export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) 
         </CardContent>
       </Card>
 
-      {result && (
+      {loading && (
+        <div className="space-y-6 animate-slide-up">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-bold text-gray-900">Generating Ideas</h3>
+              <Badge variant="secondary">
+                <Loader2 className="h-3 w-3 animate-spin" />
+              </Badge>
+            </div>
+            <div className="grid gap-5">
+              {Array.from({ length: numIdeas }).map((_, index) => (
+                <IdeaCardSkeleton key={index} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!loading && result && (
         <div className="space-y-6 animate-slide-up">
           {result.warning && (
             <Card className="border-amber-200 bg-amber-50/50">

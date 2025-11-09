@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}
+
+@layer components {
+  .gradient-overlay {
+    background: linear-gradient(135deg, #980000 0%, #c41e3a 100%);
+  }
+
+  .card-shadow {
+    box-shadow: 0 4px 6px rgba(152, 0, 0, 0.07), 0 10px 13px rgba(152, 0, 0, 0.03);
+  }
+
+  .card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    @apply shadow-2xl;
+    transform: translateY(-4px);
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg active:scale-95;
+  }
+
+  .btn-primary-solid {
+    @apply btn-primary bg-[#980000] text-white hover:bg-[#7a0000];
+  }
+
+  .btn-primary-ghost {
+    @apply btn-primary text-[#980000] hover:bg-[#FFF4F3] border border-[#980000]/20;
+  }
+
+  .prose-content {
+    @apply text-gray-700 leading-relaxed;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium;
+  }
+
+  .badge-primary {
+    @apply badge bg-[#FFF4F3] text-[#980000];
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .checkbox-custom {
+    accent-color: #980000;
+  }
+}

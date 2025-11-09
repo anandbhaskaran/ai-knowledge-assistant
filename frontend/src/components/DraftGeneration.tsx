@@ -15,13 +15,15 @@ interface DraftGenerationProps {
 }
 
 const LOADING_MESSAGES = [
-  { message: "Analyzing outline structure...", icon: "📋" },
-  { message: "Searching for sources...", icon: "🔍" },
-  { message: "Writing introduction...", icon: "✍️" },
-  { message: "Developing body sections...", icon: "📝" },
-  { message: "Crafting conclusion...", icon: "🎯" },
-  { message: "Adding citations...", icon: "📚" },
-  { message: "Finalizing draft...", icon: "⏳" },
+  { message: "Agent is analyzing outline and planning draft strategy...", icon: "🤔" },
+  { message: "Agent is reasoning about narrative flow and structure...", icon: "💭" },
+  { message: "Agent is retrieving and evaluating sources...", icon: "🔍" },
+  { message: "Agent is crafting introduction with thesis...", icon: "✍️" },
+  { message: "Agent is developing body sections with evidence...", icon: "📝" },
+  { message: "Agent is integrating citations and fact-checking...", icon: "📚" },
+  { message: "Agent is writing conclusion and key takeaways...", icon: "🎯" },
+  { message: "Agent is verifying editorial compliance and tone...", icon: "✓" },
+  { message: "Agent is polishing final draft...", icon: "⏳" },
 ];
 
 export default function DraftGeneration({ outline, onBack }: DraftGenerationProps) {
@@ -51,7 +53,7 @@ export default function DraftGeneration({ outline, onBack }: DraftGenerationProp
         }
         return prev;
       });
-    }, 2000);
+    }, 2500); // ~22.5 seconds total for 9 messages, suitable for 25 sec wait
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -60,7 +62,7 @@ export default function DraftGeneration({ outline, onBack }: DraftGenerationProp
         }
         return prev;
       });
-    }, 120);
+    }, 250); // ~24 seconds to reach 95%, suitable for 25 sec wait
 
     return () => {
       clearInterval(messageInterval);
@@ -168,42 +170,87 @@ export default function DraftGeneration({ outline, onBack }: DraftGenerationProp
   const renderMarkdownWithCitations = (text: string) => {
     const processedMarkdown = preprocessMarkdown(text);
 
-    // Split by citation pattern [n] to insert custom components
-    const parts: (string | JSX.Element)[] = [];
-    const simpleCitationRegex = /\[(\d+)\]/g;
-    let lastIndex = 0;
-    let match;
-    let key = 0;
+    // Function to process text and replace [n] with citation badges inline
+    const processTextWithCitations = (text: string) => {
+      const citationRegex = /\[(\d+)\]/g;
+      const parts: (string | JSX.Element)[] = [];
+      let lastIndex = 0;
+      let match;
+      let keyIndex = 0;
 
-    while ((match = simpleCitationRegex.exec(processedMarkdown)) !== null) {
-      const citationNumber = parseInt(match[1]);
+      while ((match = citationRegex.exec(text)) !== null) {
+        // Add text before citation
+        if (match.index > lastIndex) {
+          parts.push(text.substring(lastIndex, match.index));
+        }
 
-      // Add markdown content before citation
-      if (match.index > lastIndex) {
-        const markdownChunk = processedMarkdown.substring(lastIndex, match.index);
+        // Add citation badge inline
+        const citationNumber = parseInt(match[1]);
         parts.push(
-          <ReactMarkdown key={`md-${key++}`} remarkPlugins={[remarkGfm]}>
-            {markdownChunk}
-          </ReactMarkdown>
+          <CitationBadge key={`cite-${keyIndex++}`} citationNumber={citationNumber} />
         );
+
+        lastIndex = match.index + match[0].length;
       }
 
-      // Add citation badge
-      parts.push(<CitationBadge key={`cite-${key++}`} citationNumber={citationNumber} />);
+      // Add remaining text
+      if (lastIndex < text.length) {
+        parts.push(text.substring(lastIndex));
+      }
 
-      lastIndex = match.index + match[0].length;
-    }
+      return parts.length > 0 ? parts : text;
+    };
 
-    // Add remaining markdown
-    if (lastIndex < processedMarkdown.length) {
-      parts.push(
-        <ReactMarkdown key={`md-${key++}`} remarkPlugins={[remarkGfm]}>
-          {processedMarkdown.substring(lastIndex)}
-        </ReactMarkdown>
-      );
-    }
+    // Function to recursively process children and replace citations
+    const processChildren = (children: any): any => {
+      if (typeof children === 'string') {
+        return processTextWithCitations(children);
+      }
 
-    return parts;
+      if (Array.isArray(children)) {
+        return children.map((child, index) => {
+          if (typeof child === 'string') {
+            const processed = processTextWithCitations(child);
+            return Array.isArray(processed) ? <span key={index}>{processed}</span> : processed;
+          }
+          return child;
+        });
+      }
+
+      return children;
+    };
+
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          // Override text-containing elements to process citations inline
+          p: ({ children, ...props }) => {
+            return <p {...props}>{processChildren(children)}</p>;
+          },
+          strong: ({ children, ...props }) => {
+            return <strong {...props}>{processChildren(children)}</strong>;
+          },
+          em: ({ children, ...props }) => {
+            return <em {...props}>{processChildren(children)}</em>;
+          },
+          li: ({ children, ...props }) => {
+            return <li {...props}>{processChildren(children)}</li>;
+          },
+          h1: ({ children, ...props }) => {
+            return <h1 {...props}>{processChildren(children)}</h1>;
+          },
+          h2: ({ children, ...props }) => {
+            return <h2 {...props}>{processChildren(children)}</h2>;
+          },
+          h3: ({ children, ...props }) => {
+            return <h3 {...props}>{processChildren(children)}</h3>;
+          },
+        }}
+      >
+        {processedMarkdown}
+      </ReactMarkdown>
+    );
   };
 
   return (

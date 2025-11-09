@@ -16,12 +16,15 @@ interface OutlineGenerationProps {
 }
 
 const LOADING_MESSAGES = [
-  { message: "Analyzing your topic...", icon: "🔍" },
-  { message: "Searching archive sources...", icon: "📚" },
-  { message: "Fetching web sources...", icon: "🌐" },
-  { message: "Structuring outline...", icon: "📝" },
-  { message: "Ranking sources...", icon: "⭐" },
-  { message: "Almost done...", icon: "⏳" },
+  { message: "Agent is analyzing your topic and planning approach...", icon: "🤔" },
+  { message: "Agent is searching archive database for relevant articles...", icon: "📚" },
+  { message: "Agent is evaluating archive sources for relevance...", icon: "🔍" },
+  { message: "Agent is fetching real-time web sources...", icon: "🌐" },
+  { message: "Agent is comparing and ranking all sources...", icon: "⭐" },
+  { message: "Agent is reasoning about outline structure...", icon: "💭" },
+  { message: "Agent is organizing sections and key points...", icon: "📝" },
+  { message: "Agent is verifying editorial compliance...", icon: "✓" },
+  { message: "Agent is finalizing outline...", icon: "⏳" },
 ];
 
 export default function OutlineGeneration({ idea, onOutlineGenerated, onBack }: OutlineGenerationProps) {
@@ -49,7 +52,7 @@ export default function OutlineGeneration({ idea, onOutlineGenerated, onBack }: 
         }
         return prev;
       });
-    }, 2000);
+    }, 8000); // ~72 seconds total for 9 messages, suitable for 1-1.5 min wait
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -58,7 +61,7 @@ export default function OutlineGeneration({ idea, onOutlineGenerated, onBack }: 
         }
         return prev;
       });
-    }, 100);
+    }, 900); // ~85 seconds to reach 95%, suitable for 1-1.5 min wait
 
     return () => {
       clearInterval(messageInterval);

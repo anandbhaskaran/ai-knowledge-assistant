@@ -35,6 +35,7 @@ export interface OutlineRequest {
   thesis: string;
   key_facts: string[];
   suggested_visualization?: string;
+  enable_web_search?: boolean;
 }
 
 export interface OutlineResponse {
@@ -54,6 +55,7 @@ export interface DraftRequest {
   sources?: Source[];
   key_facts?: string[];
   target_word_count?: number;
+  enable_web_search?: boolean;
 }
 
 export interface DraftResponse {

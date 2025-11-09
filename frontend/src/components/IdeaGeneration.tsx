@@ -1,12 +1,23 @@
 import { useState } from 'react';
-import { Search, AlertCircle } from 'lucide-react';
+import { Search, AlertCircle, Lightbulb, TrendingUp, DollarSign, Bitcoin, Cpu } from 'lucide-react';
 import { generateIdeas } from '../services/api';
 import type { IdeasResponse, Idea } from '../types/api';
 import IdeaCard from './IdeaCard';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { Badge } from './ui/Badge';
 
 interface IdeaGenerationProps {
   onIdeaSelected: (idea: Idea) => void;
 }
+
+const TOPIC_CATEGORIES = [
+  { label: 'Geopolitics', icon: TrendingUp, color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
+  { label: 'Macroeconomics', icon: DollarSign, color: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' },
+  { label: 'Cryptocurrency', icon: Bitcoin, color: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
+  { label: 'Technology', icon: Cpu, color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
+];
 
 export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) {
   const [topic, setTopic] = useState('');
@@ -30,92 +41,160 @@ export default function IdeaGeneration({ onIdeaSelected }: IdeaGenerationProps) 
     }
   };
 
+  const handleCategoryClick = (category: string) => {
+    setTopic(category);
+  };
+
+  const handleIdeateFurther = async (idea: Idea) => {
+    setTopic(idea.headline);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await generateIdeas(idea.headline, numIdeas);
+      setResult(response);
+      // Scroll to results
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="space-y-8">
-      <div className="bg-white rounded-2xl card-shadow p-8 border border-gray-100">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Start Your Research</h2>
-          <p className="text-gray-600 mt-1">Tell us your topic, and we'll generate compelling article ideas with verified sources.</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="topic" className="block text-sm font-semibold text-gray-900 mb-3">
-              What's your topic?
-            </label>
-            <input
-              type="text"
-              id="topic"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g., Artificial Intelligence in Healthcare..."
-              className="w-full px-5 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#980000] focus:border-transparent outline-none transition-all text-base"
-              required
-            />
+    <div className="space-y-8 animate-fade-in">
+      <Card className="border-none shadow-xl bg-gradient-to-br from-white to-gray-50/50">
+        <CardHeader className="space-y-3 pb-4">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl">
+              <Lightbulb className="h-7 w-7 text-primary" strokeWidth={2} />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-2xl">Start Your Research</CardTitle>
+              <CardDescription className="text-base mt-2">
+                Tell us your topic, and we'll generate compelling article ideas with verified sources.
+              </CardDescription>
+            </div>
           </div>
+        </CardHeader>
 
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label htmlFor="numIdeas" className="block text-sm font-semibold text-gray-900">
-                How many ideas?
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-900 mb-3">
+                Quick Start Categories
               </label>
-              <badge-primary className="badge-primary">{numIdeas} idea{numIdeas !== 1 ? 's' : ''}</badge-primary>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {TOPIC_CATEGORIES.map((category) => {
+                  const Icon = category.icon;
+                  return (
+                    <button
+                      key={category.label}
+                      type="button"
+                      onClick={() => handleCategoryClick(category.label)}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${category.color} ${
+                        topic === category.label ? 'ring-2 ring-offset-2 ring-primary' : ''
+                      }`}
+                    >
+                      <Icon size={24} strokeWidth={2} />
+                      <span className="text-xs font-semibold text-center">{category.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <input
-              type="range"
-              id="numIdeas"
-              min="1"
-              max="5"
-              value={numIdeas}
-              onChange={(e) => setNumIdeas(Number(e.target.value))}
-              className="w-full h-2.5 bg-gray-200 rounded-full appearance-none cursor-pointer checkbox-custom"
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
-              <span>1</span>
-              <span>5</span>
-            </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary-solid w-full disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
-          >
-            {loading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Generating Ideas...</span>
-              </>
-            ) : (
-              <>
-                <Search size={20} />
-                <span>Generate Ideas</span>
-              </>
+            <div className="space-y-3">
+              <label htmlFor="topic" className="block text-sm font-semibold text-gray-900">
+                Or enter your own topic
+              </label>
+              <Input
+                id="topic"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="e.g., Artificial Intelligence in Healthcare..."
+                className="h-12 text-base"
+                required
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label htmlFor="numIdeas" className="block text-sm font-semibold text-gray-900">
+                  How many ideas?
+                </label>
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                  {numIdeas} idea{numIdeas !== 1 ? 's' : ''}
+                </Badge>
+              </div>
+              <input
+                type="range"
+                id="numIdeas"
+                min="1"
+                max="5"
+                value={numIdeas}
+                onChange={(e) => setNumIdeas(Number(e.target.value))}
+                className="w-full h-2.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>1</span>
+                <span>5</span>
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3 animate-slide-up">
+                <AlertCircle className="text-destructive flex-shrink-0 mt-0.5" size={20} />
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
             )}
-          </button>
-        </form>
 
-        {error && (
-          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3 fade-in">
-            <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-      </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              size="lg"
+              className="w-full text-base shadow-lg hover:shadow-xl"
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Generating Ideas...</span>
+                </>
+              ) : (
+                <>
+                  <Search size={20} />
+                  <span>Generate Ideas</span>
+                </>
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {result && (
-        <div className="space-y-6 fade-in">
+        <div className="space-y-6 animate-slide-up">
           {result.warning && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-              <p className="text-sm text-amber-900">{result.warning}</p>
-            </div>
+            <Card className="border-amber-200 bg-amber-50/50">
+              <CardContent className="pt-6">
+                <p className="text-sm text-amber-900">{result.warning}</p>
+              </CardContent>
+            </Card>
           )}
 
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Generated Ideas</h3>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-bold text-gray-900">Generated Ideas</h3>
+              <Badge variant="secondary">{result.ideas.length}</Badge>
+            </div>
             <div className="grid gap-5">
               {result.ideas.map((idea, index) => (
-                <IdeaCard key={index} idea={idea} onSelect={() => onIdeaSelected(idea)} />
+                <IdeaCard
+                  key={index}
+                  idea={idea}
+                  onSelect={() => onIdeaSelected(idea)}
+                  onIdeateFurther={() => handleIdeateFurther(idea)}
+                />
               ))}
             </div>
           </div>

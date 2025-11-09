@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { FileText, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { FileText, AlertCircle, ArrowLeft, CheckCircle2, List } from 'lucide-react';
 import { generateOutline } from '../services/api';
 import type { Idea, OutlineResponse } from '../types/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
 
 interface OutlineGenerationProps {
   idea: Idea;
@@ -33,68 +36,92 @@ export default function OutlineGeneration({ idea, onOutlineGenerated, onBack }: 
   };
 
   return (
-    <div className="space-y-8">
-      <button
+    <div className="space-y-8 animate-fade-in">
+      <Button
         onClick={onBack}
-        className="group flex items-center gap-2 text-gray-600 hover:text-[#980000] transition-colors font-medium"
+        variant="ghost"
+        className="group gap-2"
       >
         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
         Back to Ideas
-      </button>
+      </Button>
 
-      <div className="bg-white rounded-2xl card-shadow p-8 border border-gray-100">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Article Outline</h2>
-          <p className="text-gray-600">We'll structure your article with clear sections and sources.</p>
-        </div>
-
-        <div className="space-y-6 mb-8">
-          <div className="p-4 bg-gradient-to-br from-[#FFF4F3] to-white rounded-xl border border-[#980000]/5">
-            <h3 className="text-sm font-semibold text-[#980000] mb-2">Headline</h3>
-            <p className="text-gray-900 font-medium">{idea.headline}</p>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Thesis & Key Facts</h3>
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
-              <p className="text-gray-700 leading-relaxed">{idea.thesis}</p>
+      <Card className="border-none shadow-xl bg-gradient-to-br from-white to-gray-50/50">
+        <CardHeader className="space-y-3 pb-4">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl">
+              <List className="h-7 w-7 text-primary" strokeWidth={2} />
             </div>
-            <ul className="space-y-2.5">
-              {idea.key_facts.map((fact, index) => (
-                <li key={index} className="flex items-start gap-2.5">
-                  <CheckCircle2 className="text-[#980000] flex-shrink-0 mt-0.5" size={18} />
-                  <span className="text-sm text-gray-700">{fact}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="flex-1">
+              <CardTitle className="text-2xl">Create Article Outline</CardTitle>
+              <CardDescription className="text-base mt-2">
+                We'll structure your article with clear sections and verified sources.
+              </CardDescription>
+            </div>
           </div>
-        </div>
+        </CardHeader>
 
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="btn-primary-solid w-full disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
-        >
-          {loading ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Generating Outline...</span>
-            </>
-          ) : (
-            <>
-              <FileText size={20} />
-              <span>Generate Outline</span>
-            </>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="p-5 bg-gradient-to-br from-primary/5 to-primary/[0.02] rounded-xl border border-primary/10">
+              <div className="flex items-center gap-2 mb-3">
+                <Badge className="text-xs">Headline</Badge>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">{idea.headline}</h3>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-900">Thesis Statement</h3>
+              </div>
+              <div className="bg-gray-50/80 rounded-lg p-4 border border-gray-200/60">
+                <p className="text-gray-700 leading-relaxed">{idea.thesis}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-900">Key Facts</h3>
+                <Badge variant="secondary">{idea.key_facts.length}</Badge>
+              </div>
+              <ul className="space-y-2.5 bg-gray-50/50 rounded-lg p-4 border border-gray-200/40">
+                {idea.key_facts.map((fact, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <CheckCircle2 className="text-primary flex-shrink-0 mt-0.5" size={16} strokeWidth={2.5} />
+                    <span className="text-sm text-gray-700 leading-relaxed">{fact}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3 animate-slide-up">
+              <AlertCircle className="text-destructive flex-shrink-0 mt-0.5" size={20} />
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
           )}
-        </button>
 
-        {error && (
-          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3 fade-in">
-            <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-      </div>
+          <Button
+            onClick={handleGenerate}
+            disabled={loading}
+            size="lg"
+            className="w-full text-base shadow-lg hover:shadow-xl"
+          >
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Generating Outline...</span>
+              </>
+            ) : (
+              <>
+                <FileText size={20} />
+                <span>Generate Outline</span>
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

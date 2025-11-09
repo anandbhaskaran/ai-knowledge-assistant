@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { FileEdit, AlertCircle, ArrowLeft, Download } from 'lucide-react';
+import { FileEdit, AlertCircle, ArrowLeft, Download, FileText, ExternalLink } from 'lucide-react';
 import { generateDraft } from '../services/api';
 import type { OutlineResponse, DraftResponse } from '../types/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
 
 interface DraftGenerationProps {
   outline: OutlineResponse;
@@ -51,143 +54,185 @@ export default function DraftGeneration({ outline, onBack }: DraftGenerationProp
   };
 
   return (
-    <div className="space-y-8">
-      <button
+    <div className="space-y-8 animate-fade-in">
+      <Button
         onClick={onBack}
-        className="group flex items-center gap-2 text-gray-600 hover:text-[#980000] transition-colors font-medium"
+        variant="ghost"
+        className="group gap-2"
       >
         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
         Back to Outline
-      </button>
+      </Button>
 
-      <div className="bg-white rounded-2xl card-shadow p-8 border border-gray-100">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Generate Draft Article</h2>
-          <p className="text-gray-600">Convert your outline into a publication-ready draft.</p>
-        </div>
-
-        <div className="space-y-6 mb-8">
-          <div className="p-4 bg-gradient-to-br from-[#FFF4F3] to-white rounded-xl border border-[#980000]/5">
-            <h3 className="text-sm font-semibold text-[#980000] mb-2">Headline</h3>
-            <p className="font-medium text-gray-900">{outline.headline}</p>
-            <p className="text-sm text-gray-600 mt-2">{outline.thesis}</p>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label htmlFor="wordCount" className="text-sm font-semibold text-gray-900">
-                Target Length
-              </label>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-[#FFF4F3] text-[#980000]">{targetWordCount.toLocaleString()} words</span>
+      <Card className="border-none shadow-xl bg-gradient-to-br from-white to-gray-50/50">
+        <CardHeader className="space-y-3 pb-4">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl">
+              <FileEdit className="h-7 w-7 text-primary" strokeWidth={2} />
             </div>
-            <input
-              type="range"
-              id="wordCount"
-              min="1000"
-              max="2000"
-              step="100"
-              value={targetWordCount}
-              onChange={(e) => setTargetWordCount(Number(e.target.value))}
-              className="w-full h-2.5 bg-gray-200 rounded-full appearance-none cursor-pointer checkbox-custom"
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
-              <span>1,000</span>
-              <span>2,000</span>
+            <div className="flex-1">
+              <CardTitle className="text-2xl">Generate Draft Article</CardTitle>
+              <CardDescription className="text-base mt-2">
+                Convert your outline into a publication-ready draft with proper citations.
+              </CardDescription>
             </div>
           </div>
-        </div>
+        </CardHeader>
 
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="btn-primary-solid w-full disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
-        >
-          {loading ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Generating Draft...</span>
-            </>
-          ) : (
-            <>
-              <FileEdit size={20} />
-              <span>Generate Draft</span>
-            </>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="p-5 bg-gradient-to-br from-primary/5 to-primary/[0.02] rounded-xl border border-primary/10">
+              <div className="flex items-center gap-2 mb-3">
+                <Badge className="text-xs">Headline</Badge>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{outline.headline}</h3>
+              <p className="text-sm text-gray-600">{outline.thesis}</p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label htmlFor="wordCount" className="text-sm font-semibold text-gray-900">
+                  Target Length
+                </label>
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                  {targetWordCount.toLocaleString()} words
+                </Badge>
+              </div>
+              <input
+                type="range"
+                id="wordCount"
+                min="1000"
+                max="2000"
+                step="100"
+                value={targetWordCount}
+                onChange={(e) => setTargetWordCount(Number(e.target.value))}
+                className="w-full h-2.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>1,000</span>
+                <span>2,000</span>
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3 animate-slide-up">
+              <AlertCircle className="text-destructive flex-shrink-0 mt-0.5" size={20} />
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
           )}
-        </button>
 
-        {error && (
-          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3 fade-in">
-            <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-      </div>
+          <Button
+            onClick={handleGenerate}
+            disabled={loading}
+            size="lg"
+            className="w-full text-base shadow-lg hover:shadow-xl"
+          >
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Generating Draft...</span>
+              </>
+            ) : (
+              <>
+                <FileEdit size={20} />
+                <span>Generate Draft</span>
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
 
       {draft && (
-        <div className="bg-white rounded-2xl card-shadow p-8 border border-gray-100 space-y-6 fade-in">
-          <div className="flex items-center justify-between pb-6 border-b">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900">Your Draft Article</h3>
-              <p className="text-sm text-gray-600 mt-1">Ready for editing and publication</p>
+        <Card className="border-none shadow-xl animate-slide-up">
+          <CardHeader className="pb-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <CardTitle className="text-2xl flex items-center gap-3">
+                  <FileText className="h-6 w-6 text-primary" />
+                  Your Draft Article
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  Ready for editing and publication
+                </CardDescription>
+              </div>
+              <Button
+                onClick={downloadDraft}
+                variant="outline"
+                className="gap-2"
+              >
+                <Download size={18} />
+                Download
+              </Button>
             </div>
-            <button
-              onClick={downloadDraft}
-              className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-[#FFF4F3] rounded-lg transition-colors text-sm font-medium text-gray-900"
-            >
-              <Download size={18} />
-              Download
-            </button>
-          </div>
+          </CardHeader>
 
-          {draft.warning && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <p className="text-sm text-amber-900">{draft.warning}</p>
-            </div>
-          )}
+          <CardContent className="space-y-6">
+            {draft.warning && (
+              <Card className="border-amber-200 bg-amber-50/50">
+                <CardContent className="pt-6">
+                  <p className="text-sm text-amber-900">{draft.warning}</p>
+                </CardContent>
+              </Card>
+            )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-lg border border-blue-100">
-              <div className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-1">Word Count</div>
-              <div className="text-2xl font-bold text-blue-900">{draft.word_count.toLocaleString()}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-xl border border-blue-200/50">
+                <div className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-2">Word Count</div>
+                <div className="text-3xl font-bold text-blue-900">{draft.word_count.toLocaleString()}</div>
+              </div>
+              {draft.editorial_compliance_score !== undefined && (
+                <div className="p-5 bg-gradient-to-br from-green-50 to-green-100/30 rounded-xl border border-green-200/50">
+                  <div className="text-xs font-semibold text-green-900 uppercase tracking-wide mb-2">Compliance Score</div>
+                  <div className="text-3xl font-bold text-green-900">{(draft.editorial_compliance_score * 100).toFixed(0)}%</div>
+                </div>
+              )}
             </div>
-            {draft.editorial_compliance_score !== undefined && (
-              <div className="p-4 bg-gradient-to-br from-green-50 to-green-100/30 rounded-lg border border-green-100">
-                <div className="text-xs font-semibold text-green-900 uppercase tracking-wide mb-1">Compliance Score</div>
-                <div className="text-2xl font-bold text-green-900">{(draft.editorial_compliance_score * 100).toFixed(0)}%</div>
+
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="prose prose-lg max-w-none">
+                <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+                  {draft.draft}
+                </div>
+              </div>
+            </div>
+
+            {draft.sources_used && draft.sources_used.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-lg font-semibold text-gray-900">Sources Cited</h4>
+                  <Badge variant="secondary">{draft.sources_used.length}</Badge>
+                </div>
+                <div className="grid gap-3">
+                  {draft.sources_used.map((source, index) => (
+                    <Card key={index} className="transition-all hover:shadow-md hover:border-primary/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex-1">
+                            <div className="font-semibold text-gray-900 mb-1">{source.title}</div>
+                            <div className="text-xs text-gray-500">{source.source} • {source.date}</div>
+                          </div>
+                          {source.citation_number && (
+                            <Badge className="flex-shrink-0">[{source.citation_number}]</Badge>
+                          )}
+                        </div>
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline break-all flex items-center gap-1 group"
+                        >
+                          <span>{source.url}</span>
+                          <ExternalLink size={12} className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </a>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             )}
-          </div>
-
-          <div className="prose-lg max-w-none">
-            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed text-base">
-              {draft.draft}
-            </div>
-          </div>
-
-          {draft.sources_used && draft.sources_used.length > 0 && (
-            <div className="border-t pt-6">
-              <h4 className="font-semibold text-gray-900 mb-4">Sources Cited</h4>
-              <div className="grid gap-3">
-                {draft.sources_used.map((source, index) => (
-                  <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-[#980000] transition-colors">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900">{source.title}</div>
-                        <div className="text-xs text-gray-500 mt-1">{source.source} • {source.date}</div>
-                      </div>
-                      {source.citation_number && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-[#FFF4F3] text-[#980000]">[{source.citation_number}]</span>
-                      )}
-                    </div>
-                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-sm text-[#980000] hover:underline break-all">
-                      {source.url}
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

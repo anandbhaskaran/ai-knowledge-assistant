@@ -19,7 +19,7 @@ _Note: This article is also available on [GitHub](https://github.com/anandbhaska
 
 ![High-Level Architecture](./high-level-architecure.png)
 
-**Why ReAct Agents?** Journalism demands multi-step reasoning: historical context (archive), recent developments (web), expert commentary, and synthesis across contradictory sources. Traditional RAG hard-codes retrieval; **ReAct agents** autonomously decide which tools to use, reformulate queries if results poor, and handle contradictions.
+**Why [ReAct Agents](https://thecompoundingcuriosity.substack.com/p/agentic-ai-part-1-simple-react-agent)?** Journalism demands multi-step reasoning: historical context (archive), recent developments (web), expert commentary, and synthesis across contradictory sources. Traditional RAG hard-codes retrieval; **ReAct agents** autonomously decide which tools to use, reformulate queries if results poor, and handle contradictions.
 
 **Example Agent Loop**:
 ```

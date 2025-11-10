@@ -150,6 +150,10 @@ def generate_draft_with_agent(
     elif target_word_count > 2000:
         target_word_count = 2000
 
+    # Calculate acceptable range (+/- 10%)
+    word_count_min = int(target_word_count * 0.9)
+    word_count_max = int(target_word_count * 1.1)
+
     if key_facts is None:
         key_facts = []
 
@@ -198,7 +202,7 @@ EDITORIAL GUIDELINES:
 ARTICLE DETAILS:
 Headline: {headline}
 Thesis: {thesis}
-Target Word Count: {target_word_count} words (acceptable range: 1000-2000 words)
+Target Word Count: {target_word_count} words (MUST be between {word_count_min}-{word_count_max} words)
 
 KEY FACTS TO INCORPORATE:
 {key_facts_text}
@@ -212,21 +216,25 @@ AVAILABLE SOURCES (from outline generation):
 WRITING INSTRUCTIONS:
 
 1. STRUCTURE:
-   - Follow the outline structure exactly
+   - Follow the outline structure as a foundation, BUT you may create additional sections if needed to meet the word count target
    - Use the section headings from the outline as H2 (##) and H3 (###) headings
    - DO NOT include word count indicators like "(100-150 words)" in the article
    - DO NOT include placeholder instructions like "**To Cover:**" or "**Key Point:**"
    - Start with a compelling introduction (hook + context + thesis + why it matters now)
-   - Write 2-4 well-developed paragraphs for each body section
+   - Write 3-5 well-developed paragraphs for each body section (more if needed to reach word count)
+   - If the outline doesn't provide enough structure to reach {target_word_count} words, ADD new relevant sections
    - End with a strong conclusion (synthesis + implications + memorable closing)
 
 2. CONTENT QUALITY:
+   - Write thorough, detailed content that fully explores each topic
    - Write for intelligent non-specialists
-   - Explain technical terms on first use
-   - Use concrete examples to illustrate points
+   - Explain technical terms on first use with clear examples
+   - Use multiple concrete examples, case studies, and anecdotes to illustrate points
+   - Include relevant context, background, and analysis to deepen understanding
    - Average 15-20 words per sentence
-   - Keep paragraphs to 2-4 sentences
+   - Keep paragraphs to 2-4 sentences, but use MORE paragraphs per section to reach word count
    - Maintain conversational yet authoritative tone
+   - IMPORTANT: Thoroughness and depth are valued - write comprehensive, well-developed sections
 
 3. SOURCES & CITATIONS:
    - PRIMARY RULE: Use ONLY the sources numbered above (Source 1, Source 2, etc.)
@@ -240,9 +248,11 @@ WRITING INSTRUCTIONS:
 
 4. WORD COUNT:
    - Target: {target_word_count} words
-   - Acceptable range: 1000-2000 words
-   - Distribute words evenly across sections
-   - Do not pad with unnecessary content
+   - Distribute words evenly across sections based on importance
+   - Expand sections with: detailed examples, relevant context, deeper analysis, case studies
+   - If sections are too short, ADD more paragraphs with substantive content
+   - If outline is insufficient, CREATE new relevant sections to reach target
+   - Balance quality with comprehensiveness - thorough coverage is expected
 
 5. EDITORIAL STANDARDS:
    - No clickbait or sensationalism
@@ -326,7 +336,7 @@ Just write the article directly. Start NOW with "# {headline}" followed by the a
             warnings.append(f"Word count below minimum: {word_count} words (target: {target_word_count})")
         elif word_count > 2000:
             warnings.append(f"Word count above maximum: {word_count} words (target: {target_word_count})")
-        elif abs(word_count - target_word_count) > 200:
+        elif word_count < word_count_min or word_count > word_count_max:
             warnings.append(f"Word count significantly different from target: {word_count} vs {target_word_count}")
 
         if source_tracking['unique_sources_count'] < 3:

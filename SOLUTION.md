@@ -284,6 +284,13 @@ After thorough evaluation, I chose vector-based RAG with semantic search because
 
 ```mermaid
 graph TB
+    subgraph Frontend["Frontend Stack"]
+        React[React 18<br/>UI Framework]
+        TypeScript[TypeScript<br/>Type Safety]
+        Vite[Vite<br/>Build Tool]
+        Tailwind[Tailwind CSS<br/>Styling]
+    end
+
     subgraph Backend["Backend Stack"]
         FastAPI[FastAPI 0.104+<br/>API Framework]
         Pydantic[Pydantic 2.0+<br/>Data Validation]
@@ -307,6 +314,7 @@ graph TB
         Pytest[Pytest<br/>Testing]
     end
 
+    style React fill:#61DAFB
     style FastAPI fill:#009688
     style LlamaIndex fill:#2196F3
     style Qdrant fill:#DC3545
@@ -324,6 +332,11 @@ graph TB
 | **Web Search** | Tavily, SerpAPI, Google CSE, Brave | **Tavily** | LLM-optimized output format, built-in relevance scoring, structured results, competitive pricing |
 | **Graph DB** | Neo4j, Not applicable | **Not applicable (MVP)** | Complexity not justified for MVP; adds 4-6 weeks for marginal gains; revisit in Phase 3 for investigative workflows |
 | **API Framework** | FastAPI, Flask, Django | **FastAPI** | Type-safe with Pydantic, async support, auto-generated OpenAPI docs, modern Python patterns |
+| **UI Framework** | React, Vue, Svelte, Angular | **React 18** | Large ecosystem, mature TypeScript support, familiar to most developers, excellent documentation, hooks for state management |
+| **Build Tool** | Vite, Webpack, Parcel | **Vite** | Fast dev server with HMR, optimized production builds, native ESM support, minimal configuration, great DX |
+| **Styling** | Tailwind CSS, CSS-in-JS, SASS, CSS Modules | **Tailwind CSS** | Rapid UI development, consistent design system, utility-first approach, responsive design built-in, no CSS conflicts |
+| **Type Safety** | TypeScript, JavaScript | **TypeScript** | Catch errors at compile time, better IDE support, self-documenting code, seamless API contract validation |
+
 
 ### 2.4 Third-Party Dependencies & Flexibility
 
@@ -346,95 +359,9 @@ graph TB
 
 ---
 
-## 3. System Optimization & Quality Improvement Strategy
+## 3. Prompt Design Examples
 
-The system uses **iterative refinement** to continuously improve output quality without model fine-tuning. This approach focuses on prompt engineering, retrieval optimization, and evaluation frameworks.
-
-### 3.1 Current Approach (MVP - Completed)
-
-**ReAct Agent-Based Architecture with Specialized Tools**:
-- **Agent Pattern**: ReActAgent autonomously orchestrates research → outline → draft workflow
-- **Multi-Source Tools**: Archive retrieval (vector search) and web search (Tavily) tools
-- **Dynamic Tool Selection**: Agent decides when to use archive vs. web vs. generation based on context
-- **Structured Prompting**: Zero-shot prompts with editorial guidelines loaded via RAG
-- **Citation Integrity**: Pre-numbered source lists to enforce accuracy and prevent hallucination
-- **Format Constraints**: Explicit output specifications (markdown structure, word counts, editorial compliance)
-
-### 3.2 Quality Improvement Strategies
-
-```mermaid
-flowchart TB
-    subgraph Monitoring[Continuous Monitoring]
-        A[User Feedback]-->B[Quality Metrics Dashboard]
-        C[Editor Revisions]-->B
-        D[Citation Accuracy Checks]-->B
-    end
-
-    subgraph Analysis[Analysis & Insights]
-        B-->E[Identify Patterns]
-        E-->F{Issue Type?}
-    end
-
-    subgraph Optimization[Optimization Paths]
-        F-->|Poor Retrieval|G[Adjust Embedding Model<br/>Tune Similarity Threshold]
-        F-->|Citation Errors|H[Enhance Prompt Constraints<br/>Add Validation Layer]
-        F-->|Tone Mismatch|I[Refine Editorial Guidelines<br/>Add Few-Shot Examples]
-        F-->|Missing Context|J[Expand Archive<br/>Improve Chunking]
-    end
-
-    subgraph Deployment[Deploy & Test]
-        G-->K[A/B Test]
-        H-->K
-        I-->K
-        J-->K
-        K-->L[Measure Impact]
-        L-->M{Improved?}
-        M-->|Yes|N[Production Rollout]
-        M-->|No|E
-    end
-
-    style B fill:#e1f5ff
-    style K fill:#fff4e6
-    style N fill:#90EE90
-```
-
-### 3.3 Optimization Techniques
-
-| Improvement Area | Technique | Implementation | Expected Impact |
-|------------------|-----------|----------------|-----------------|
-| **Retrieval Quality** | Hybrid search (vector + BM25) | Add keyword-based re-ranking layer | +10-15% relevance for niche queries |
-| **Prompt Engineering** | Few-shot examples in context | Add 3-5 curated examples to system prompt | +20% consistency in formatting |
-| **Source Diversity** | Query expansion & reformulation | Agent generates 2-3 query variations | +25% unique sources retrieved |
-| **Citation Accuracy** | Post-generation validation | Semantic similarity check between claim and source | -50% hallucinated citations |
-| **Contextual Understanding** | Improved chunking strategy | Use semantic chunking vs fixed 512-token windows | +15% context preservation |
-| **Cost Optimization** | Response caching & batching | Cache frequent queries, batch embeddings | -30-40% API costs |
-
-### 3.4 Evaluation Framework
-
-**Automated Metrics** (tracked continuously):
-- Citation accuracy rate: % of citations verifiable in source text
-- Relevance score: Median vector similarity of retrieved sources
-- Structural compliance: % of outputs matching expected format
-- Latency: P50, P95, P99 response times
-
-**Human Evaluation** (weekly samples):
-- Editorial quality: Journalist ratings on 1-5 scale
-- Factual correctness: Expert verification of claims
-- Usability: "How much editing needed?" survey
-
-**Continuous Improvement Loop**:
-1. Collect user feedback and revision patterns
-2. Analyze failure modes (categorize by type)
-3. Test optimizations in staging environment
-4. A/B test promising changes with 10-20% of traffic
-5. Measure impact on success metrics
-6. Roll out improvements that show >10% gains
-
----
-
-## 4. Prompt Design Examples
-
-### 4.1 Outline Generation Prompt (Agent-Based)
+### 3.1 Outline Generation Prompt (Agent-Based)
 
 This prompt is sent to the ReActAgent orchestrating archive + web search tools:
 
@@ -626,9 +553,9 @@ Generate the draft now.
 
 ---
 
-## 5. Success Metrics for MVP
+## 4. Success Metrics for MVP
 
-### 5.1 Quantitative Metrics
+### 4.1 Quantitative Metrics
 
 | Category | Metric | Target (MVP) | Measurement Method | Acceptance Criteria |
 |----------|--------|--------------|-------------------|---------------------|
@@ -642,7 +569,7 @@ Generate the draft now.
 | **Performance** | Outline Generation Latency | <30 seconds | P95 response time from API call to complete outline | Monitor API metrics |
 | **Performance** | Draft Generation Latency | <60 seconds | P95 response time for 1,500-word draft | Monitor API metrics |
 
-### 5.2 Qualitative Metrics
+### 4.2 Qualitative Metrics
 
 **User Satisfaction (via journalist surveys after 2-week pilot)**:
 - Net Promoter Score (NPS): Target ≥40 (Good)
@@ -656,7 +583,7 @@ Generate the draft now.
   - "Which generated sections require most editing?"
   - "What features are missing for production use?"
 
-### 5.3 Monitoring Dashboard
+### 4.3 Monitoring Dashboard
 
 ```mermaid
 graph TB
@@ -691,7 +618,7 @@ graph TB
     style Dashboard fill:#90EE90
 ```
 
-### 5.4 Acceptance Criteria for Production Launch
+### 4.4 Acceptance Criteria for Production Launch
 
 MVP is ready for limited production rollout when:
 
@@ -704,9 +631,9 @@ MVP is ready for limited production rollout when:
 
 ---
 
-## 6. Implementation Roadmap & Future Enhancements
+## 5. Implementation Roadmap & Quality Improvement
 
-### 6.1 Current Status: MVP Completed ✅
+### 5.1 Current Status: MVP Completed ✅
 
 The core system is **fully operational** with the following components deployed:
 
@@ -724,7 +651,35 @@ The core system is **fully operational** with the following components deployed:
 - P95 latency: <30s (outline), <60s (draft)
 - Cost: ~$0.26 per full article generation
 
-### 6.2 Next Phases: Production Maturity & Scale
+### 5.2 Optimization & Quality Improvement Strategy
+
+The system uses **iterative refinement** to continuously improve output quality without model fine-tuning. This approach focuses on prompt engineering, retrieval optimization, and evaluation frameworks.
+
+**Current Approach**:
+- **Agent Pattern**: ReActAgent autonomously orchestrates research → outline → draft workflow
+- **Multi-Source Tools**: Archive retrieval (vector search) and web search (Tavily) tools
+- **Dynamic Tool Selection**: Agent decides when to use archive vs. web vs. generation based on context
+- **Structured Prompting**: Zero-shot prompts with editorial guidelines loaded via RAG
+- **Citation Integrity**: Pre-numbered source lists to enforce accuracy and prevent hallucination
+- **Format Constraints**: Explicit output specifications (markdown structure, word counts, editorial compliance)
+
+**Optimization Techniques**:
+
+| Improvement Area | Technique | Expected Impact |
+|------------------|-----------|-----------------|
+| **Retrieval Quality** | Hybrid search (vector + BM25) | +10-15% relevance for niche queries |
+| **Prompt Engineering** | Few-shot examples in context | +20% consistency in formatting |
+| **Source Diversity** | Query expansion & reformulation | +25% unique sources retrieved |
+| **Citation Accuracy** | Post-generation validation | -50% hallucinated citations |
+| **Contextual Understanding** | Semantic chunking | +15% context preservation |
+| **Cost Optimization** | Response caching & batching | -30-40% API costs |
+
+**Evaluation Framework**:
+- **Automated Metrics**: Citation accuracy, relevance scores, structural compliance, latency (P50, P95, P99)
+- **Human Evaluation**: Editorial quality ratings (1-5), factual correctness verification, usability surveys
+- **Continuous Improvement Loop**: Feedback collection → failure analysis → staging tests → A/B testing → production rollout
+
+### 5.3 Next Phases: Production Maturity & Scale
 
 ```mermaid
 timeline
@@ -746,7 +701,7 @@ timeline
         Advanced Analytics : Topic clustering, source diversity metrics
 ```
 
-### 6.3 Phase Priorities & Tooling
+### 5.4 Phase Priorities & Tooling
 
 | Phase | Priority Features | Tools & Technologies | Expected Impact |
 |-------|------------------|---------------------|-----------------|
@@ -762,9 +717,9 @@ timeline
 
 ---
 
-## 7. Risks & Mitigation Strategies
+## 6. Risks & Mitigation Strategies
 
-### 7.1 Key Risks
+### 6.1 Key Risks
 
 | Risk | Likelihood | Impact | Mitigation | Status |
 |------|------------|--------|------------|--------|
@@ -775,7 +730,7 @@ timeline
 | **Bias in Output** | Medium | Critical | Diverse training data, bias detection tools (Phase 1), editorial review | ⏳ Planned |
 | **Data Quality** | Low | Medium | Metadata validation at ingestion, regular archive audits | ✅ Implemented |
 
-### 7.2 Mitigation Details
+### 6.2 Mitigation Details
 
 **Hallucinated Citations** (Top Priority):
 - Prompt constraint: "ONLY use sources [1-N]" repeated 3x in different phrasings
@@ -809,9 +764,9 @@ timeline
 
 ---
 
-## 8. Competitive Differentiation & Innovation
+## 7. Competitive Differentiation & Innovation
 
-### 8.1 What Makes This Solution Stand Out
+### 7.1 What Makes This Solution Stand Out
 
 | Aspect | Our Approach | Typical RAG Systems | Competitive Advantage |
 |--------|--------------|---------------------|----------------------|
@@ -821,7 +776,7 @@ timeline
 | **Editorial Guidelines** | RAG-loaded guidelines in prompt, compliance scoring | Generic prompts, no domain customization | Maintains house style, tone, and quality standards |
 | **Transparency** | Agent reasoning logs, source relevance scores | Black-box generation | Journalists understand *why* sources were chosen |
 
-### 8.2 Technical Innovations
+### 7.2 Technical Innovations
 
 1. **Source-Aware Prompting**:
    - Pre-load numbered source list into draft prompt
@@ -841,9 +796,9 @@ timeline
 
 ---
 
-## 9. Conclusion
+## 8. Conclusion
 
-This solution balances **MVP delivery** (already completed) with **clear production roadmap** (Phases 1-3 detailed in Section 6). Key strengths:
+This solution balances **MVP delivery** (already completed) with **clear production roadmap** (Phases 1-3 detailed in Section 5). Key strengths:
 
 1. **Proven Tech Stack**: LlamaIndex + Qdrant + OpenAI + Tavily = robust, well-supported ecosystem
 2. **Strategic Tradeoffs**: Chose simplicity (ReActAgent) over complexity (LangGraph) for MVP speed; migration path to multi-agent systems clear for Phase 3

@@ -267,49 +267,35 @@ graph TB
 
 #### 2.1.3 Graph RAG Consideration (Neo4j)
 
-I explored Graph RAG with Neo4j for capturing entity relationships in articles:
+**Initial Exploration**: Graph RAG was actually the first approach I explored for this project. I was excited by the potential of knowledge graphs to capture entity relationships and enable sophisticated reasoning over connected information. I even wrote a detailed blog post exploring this concept: [RAG is Broken: We Need Connected Entities](https://thecompoundingcuriosity.substack.com/p/rag-is-broken-we-need-connected-entities).
 
-```mermaid
-flowchart LR
-    subgraph VectorRAG[Vector RAG - Current Approach]
-        VQ[User Query]-->VE[Generate Embedding]
-        VE-->VS[Vector Search]
-        VS-->VR[Ranked Results]
-    end
+**Why I Moved Away from It**:
 
-    subgraph GraphRAG[Graph RAG - Alternative]
-        GQ[User Query]-->GE[Entity Extraction]
-        GE-->GT[Graph Traversal]
-        GN[Knowledge Graph]-->GT
-        GT-->GC[Context Assembly]
-    end
+While Graph RAG is promising and theoretically powerful, I ultimately decided it was **over-engineering for this specific problem**. Here's why:
 
-    style VR fill:#90EE90
-    style GC fill:#FFB6C1
-```
+| Aspect | Theoretical Benefits | Practical Reality for This Use Case |
+|--------|---------------------|-------------------------------------|
+| **Relationship Capture** | Explicitly models connections between entities, topics, sources | Most journalist queries are "find articles about X" not "find relationships between X and Y" |
+| **Multi-hop Reasoning** | Enables queries like "articles citing sources that contradict X" | Limited real-world use cases in typical article research workflow |
+| **Implementation Complexity** | Requires NER pipeline, graph schema design, Cypher queries | 4-6 week delay to MVP for marginal accuracy improvement (est. 5-8%) |
+| **Data Requirements** | Needs large corpus (5,000+ articles) for reliable entity extraction | Current archive is smaller; building graph infrastructure premature |
+| **Explainability** | Visual relationship graphs, traceable reasoning paths | Adds UI/UX development overhead without clear user demand |
 
-**Graph RAG Analysis**:
+**Decision: Stick with Classic RAG**
 
-| Aspect | Pros | Cons |
-|--------|------|------|
-| **Relationship Capture** | Explicitly models connections between entities, topics, sources | Requires entity extraction pipeline, more complex ingestion |
-| **Multi-hop Reasoning** | "Find articles citing sources that contradict X" queries | Query complexity increases, performance overhead |
-| **Explainability** | Visual relationship graphs, traceable reasoning paths | Additional UI/UX development for graph visualization |
-| **Data Quality** | Needs high-quality NER and relation extraction (80%+ accuracy) | Error propagation from extraction stage |
+After thorough evaluation, I chose vector-based RAG with semantic search because:
+1. **Simplicity**: Straightforward ingestion pipeline, no entity extraction complexity
+2. **Proven effectiveness**: Semantic search handles 90%+ of journalist research queries well
+3. **Time to MVP**: Weeks instead of months
+4. **Lower risk**: No dependency on NER accuracy or graph schema evolution
+5. **Sufficient for problem**: The core need is "find relevant content", not "explore entity relationships"
 
-**Decision: Not for MVP**
-
-**Reasoning**:
-1. **Complexity**: Adds NER pipeline, graph schema design, query language (Cypher)
-2. **ROI**: Most journalist queries are keyword/topic-based, not multi-hop relational
-3. **Data quality**: Would need 5,000+ articles to train reliable entity extraction
-4. **Time**: 4-6 week delay to MVP for marginal accuracy gain (est. 5-8%)
-
-**When to reconsider** (Phase 3-4):
+**When to Reconsider** (Phase 3-4):
 - Investigative journalism workflows requiring source cross-referencing
 - Large archive (50k+ articles) with rich entity metadata
-- Fact-checking feature needs contradiction detection
-- User feedback indicates need for "find all articles about sources related to X" queries
+- Fact-checking features needing contradiction detection
+- User feedback indicating need for relationship-based queries
+- Budget and timeline allow for the additional complexity
 
 ### 2.2 Complete Technology Stack
 
@@ -356,17 +342,24 @@ graph TB
 | **Graph DB** | Neo4j, Not applicable | **Not applicable (MVP)** | Complexity not justified for MVP; adds 4-6 weeks for marginal gains; revisit in Phase 3 for investigative workflows |
 | **API Framework** | FastAPI, Flask, Django | **FastAPI** | Type-safe with Pydantic, async support, auto-generated OpenAPI docs, modern Python patterns |
 
-### 2.4 Third-Party APIs Justification
+### 2.4 Third-Party Dependencies & Flexibility
 
-**OpenAI API (GPT-4 + Embeddings)**
-- **Why not open-source LLMs**: MVP requires reliability; Llama 3, Mistral require GPU infra ($$$)
-- **Cost**: ~$0.03/request for outline generation (acceptable for MVP)
-- **Migration path**: Fine-tune Llama 3 70B on editorial data in Phase 2-3
+**Architectural Advantage**: LlamaIndex provides abstraction layers that make external dependencies easily replaceable without code refactoring.
 
-**Tavily API**
-- **Why not Google Custom Search**: Tavily returns cleaned, LLM-optimized content + relevance scores
-- **Why not SerpAPI**: Higher cost ($50/month vs Tavily $0/1000 searches for hobby tier)
-- **Alternative**: Brave Search API (privacy-focused, similar pricing)
+**LLM Provider (Current: OpenAI GPT-4)**
+- **Why OpenAI**: Reliability and quality for MVP; no GPU infrastructure required
+- **Cost**: ~$0.03/request for outline generation
+- **Flexibility**: Can swap to Claude, Llama 3, Mistral, or any other provider by changing LLM initialization
+- **Future path**: Multi-model strategy (GPT-4 for drafts, Claude for fact-checking, fine-tuned models for cost optimization)
+
+**Web Search Tool (Current: Tavily API)**
+- **Why Tavily**: LLM-optimized output, built-in relevance scoring, competitive pricing
+- **Key advantage**: Implemented as a modular tool, not hardcoded into retrieval pipeline
+- **Flexibility**:
+  - Can add multiple search tools (Google CSE, Brave Search, Bing API)
+  - Can restrict tools to trusted sources (e.g., only Bloomberg, Reuters, FT)
+  - Easy to replace with internal search APIs over proprietary databases
+- **Tool composition**: Agent can use different tools for different query types
 
 ---
 

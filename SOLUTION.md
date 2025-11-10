@@ -352,11 +352,13 @@ The system uses **iterative refinement** to continuously improve output quality 
 
 ### 3.1 Current Approach (MVP - Completed)
 
-**Zero-shot prompting with structured constraints**:
-- GPT-4 with editorial guidelines loaded via RAG
-- Pre-numbered source lists to enforce citation accuracy
-- Explicit output format specifications (markdown structure, word counts)
-- Multi-step agent workflow (research → outline → draft)
+**ReAct Agent-Based Architecture with Specialized Tools**:
+- **Agent Pattern**: ReActAgent autonomously orchestrates research → outline → draft workflow
+- **Multi-Source Tools**: Archive retrieval (vector search) and web search (Tavily) tools
+- **Dynamic Tool Selection**: Agent decides when to use archive vs. web vs. generation based on context
+- **Structured Prompting**: Zero-shot prompts with editorial guidelines loaded via RAG
+- **Citation Integrity**: Pre-numbered source lists to enforce accuracy and prevent hallucination
+- **Format Constraints**: Explicit output specifications (markdown structure, word counts, editorial compliance)
 
 ### 3.2 Quality Improvement Strategies
 

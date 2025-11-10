@@ -137,33 +137,32 @@ sequenceDiagram
 ### 1.4 Data Flow Architecture
 
 ```mermaid
-graph LR
-    subgraph Ingestion["Data Ingestion Pipeline"]
-        MD[Markdown Files]-->Parse[Document Parser]
-        Parse-->Chunk[Chunking Strategy]
-        Chunk-->Embed[Embedding Generation]
-        Embed-->Store[Vector Store]
+graph TD
+    subgraph Ingestion["📥 Data Ingestion"]
+        A[Markdown Files] --> B[Parse & Chunk]
+        B --> C[Generate Embeddings]
+        C --> D[(Qdrant Vector Store)]
     end
 
-    subgraph Retrieval["Retrieval Pipeline"]
-        Query[User Query]-->QEmbed[Query Embedding]
-        QEmbed-->Search[Semantic Search]
-        Store-->Search
-        Search-->Filter[Relevance Filtering]
-        Filter-->Rank[Score-based Ranking]
+    subgraph Retrieval["🔍 Query & Retrieval"]
+        E[User Query] --> F[Query Embedding]
+        F --> G[Semantic Search]
+        D --> G
+        G --> H[Filter & Rank by Score]
     end
 
-    subgraph Generation["Generation Pipeline"]
-        Rank-->Context[Context Assembly]
-        Context-->Prompt[Prompt Construction]
-        Prompt-->LLM[GPT-4 Generation]
-        LLM-->Validate[Output Validation]
-        Validate-->Format[Citation Formatting]
+    subgraph Generation["✍️ Content Generation"]
+        H --> I[Assemble Context]
+        I --> J[Build Prompt]
+        J --> K[GPT-4 Generation]
+        K --> L[Validate & Format Citations]
     end
 
-    style Store fill:#f0f0f0
-    style LLM fill:#e1f5ff
-    style Validate fill:#fff4e6
+    L --> M[Final Output]
+
+    style D fill:#f0f0f0
+    style K fill:#e1f5ff
+    style L fill:#fff4e6
 ```
 
 ---

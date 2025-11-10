@@ -82,6 +82,8 @@ flowchart TB
 
 ### 1.2 Agent-Based Retrieval Flow
 
+The system uses a **ReActAgent** (Reasoning + Acting pattern) that autonomously decides which tools to use and when, alternating between thinking about the task and taking actions via tools. This creates a transparent, step-by-step problem-solving loop where the agent reasons through research needs, retrieves information, and synthesizes results.
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -568,66 +570,7 @@ Generate the draft now.
 | **Efficiency** | Time Savings vs. Manual | ≥60% | Baseline: 4 hours manual research → Target: <90 min with AI assistance | Time tracking study (n=10 journalists) |
 | **Performance** | Outline Generation Latency | <30 seconds | P95 response time from API call to complete outline | Monitor API metrics |
 | **Performance** | Draft Generation Latency | <60 seconds | P95 response time for 1,500-word draft | Monitor API metrics |
-
-### 4.2 Qualitative Metrics
-
-**User Satisfaction (via journalist surveys after 2-week pilot)**:
-- Net Promoter Score (NPS): Target ≥40 (Good)
-- Confidence in AI-generated citations: ≥4/5
-- Willingness to use for real articles: ≥70% of test users
-
-**Editorial Team Feedback**:
-- Semi-structured interviews (n=5 senior editors)
-- Key questions:
-  - "What would make you trust this tool for sensitive topics?"
-  - "Which generated sections require most editing?"
-  - "What features are missing for production use?"
-
-### 4.3 Monitoring Dashboard
-
-```mermaid
-graph TB
-    subgraph RealTime["Real-Time Metrics"]
-        A[API Latency<br/>P50, P95, P99]
-        B[Error Rate<br/>4xx, 5xx]
-        C[Source Retrieval<br/>Avg. relevance score]
-    end
-
-    subgraph Daily["Daily Aggregates"]
-        D[Usage Volume<br/>Requests per endpoint]
-        E[Source Mix<br/>Archive vs. Web %]
-        F[Cost Tracking<br/>OpenAI API spend]
-    end
-
-    subgraph Weekly["Weekly Quality Checks"]
-        G[Citation Audit<br/>Sample 20 drafts]
-        H[User Ratings<br/>NPS, Usability scores]
-        I[Error Analysis<br/>Categorize failures]
-    end
-
-    A-->Dashboard[Grafana Dashboard]
-    B-->Dashboard
-    C-->Dashboard
-    D-->Dashboard
-    E-->Dashboard
-    F-->Dashboard
-    G-->Dashboard
-    H-->Dashboard
-    I-->Dashboard
-
-    style Dashboard fill:#90EE90
-```
-
-### 4.4 Acceptance Criteria for Production Launch
-
-MVP is ready for limited production rollout when:
-
-1. ✅ **Accuracy**: Citation accuracy ≥90% AND factual correctness ≥85%
-2. ✅ **Performance**: P95 latency <30s (outline), <60s (draft)
-3. ✅ **Quality**: Draft usability ≥3.5/5.0 from pilot journalists (n≥10)
-4. ✅ **Reliability**: API uptime ≥99% during 2-week pilot
-5. ✅ **Cost**: <$0.50 per full article generation (outline + draft)
-6. ✅ **Security**: All source citations traceable to original URLs (audit log)
+| **Cost Efficiency** | Cost per Article | <$0.50 | Total API costs (embeddings + LLM + web search) for full workflow (ideas + outline + draft) | Track OpenAI & Tavily API usage per request |
 
 ---
 

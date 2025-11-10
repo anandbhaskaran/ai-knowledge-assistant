@@ -131,7 +131,8 @@ sequenceDiagram
 | **Vector Database** | Qdrant | Semantic search over archive | Fast, scalable, excellent filtering, open-source |
 | **Embeddings** | OpenAI text-embedding-ada-002 | Document & query vectorization | Industry-standard, 1536-dim, cost-effective |
 | **LLM** | GPT-4 | Content generation & reasoning | Superior reasoning, instruction-following, citation accuracy |
-| **Web Search** | Tavily API | Real-time information retrieval | Optimized for LLM consumption, relevance scoring, structured output |
+| **Web Search** | Tavily API (optional per request) | Real-time information retrieval | Flexible on/off control, optimized for LLM consumption, cost-effective when needed |
+| **Editorial Guidelines** | Markdown ([example](https://github.com/anandbhaskaran/ai-knowledge-assistant/blob/main/data/guidlines/editorial-guidelines.md)) | Publication style & quality standards | Ensures consistent tone, voice, citation format across all outputs |
 
 ### 1.4 Data Flow Architecture
 
@@ -584,8 +585,10 @@ The core system is **fully operational** with the following components deployed:
 - ✅ Agent-based retrieval (ReActAgent with archive + web search tools)
 - ✅ Vector database (Qdrant) with embedding-based semantic search
 - ✅ Three API endpoints: `/ideas`, `/outlines`, `/drafts`
+- ✅ **Editorial guidelines integration via RAG** - ensures all outputs match publication's tone, style, and citation standards
+- ✅ **Flexible web search control** - enable/disable web search on demand for cost control and archive-only research
+- ✅ **Iterative ideation** - refine and explore alternative angles from initial ideas for novel story discovery
 - ✅ Multi-source citation system with relevance scoring
-- ✅ Editorial guidelines integration via RAG
 - ✅ Basic frontend interface for end-to-end workflow
 - ✅ Structured logging and error handling
 
@@ -676,20 +679,30 @@ The system uses **iterative refinement** to continuously improve output quality 
 - **Value**: Single query retrieves both historical context (from archive) and breaking developments (from web)
 - **Impact**: 25% more diverse sources than single-database systems, better story angles
 
-**2. Citation Integrity Architecture**
+**2. Editorial Standards Compliance**
+- **Innovation**: Adaptable [editorial guidelines](https://github.com/anandbhaskaran/ai-knowledge-assistant/blob/main/data/guidlines/editorial-guidelines.md) injected into ReActAgent prompt
+- **Value**: All outputs automatically match house style, tone, citation format, and quality standards - no manual style guide reference needed
+- **Impact**: Consistent editorial voice across all AI-assisted content, reduced editing for style compliance
+
+**3. Flexible Source Control**
+- **Innovation**: Toggle web search on/off per request for cost control and research flexibility
+- **Value**: Archive-only mode for historical analysis, web-enabled mode for breaking news - journalist chooses based on story needs
+- **Impact**: Cost savings when web search not needed, complete control over source types
+
+**4. Iterative Ideation Workflow**
+- **Innovation**: Multi-turn idea refinement - generate ideas, explore alternatives, discover novel angles
+- **Value**: Not just "5 ideas" but a conversation to uncover unexpected story approaches and connections
+- **Impact**: More creative story angles, helps journalists overcome writer's block, explores unconsidered perspectives
+
+**5. Citation Integrity Architecture**
 - **Innovation**: Pre-numbered source lists + post-generation validation prevent hallucinations
 - **Value**: Journalists can trust citations without manual verification of every claim
 - **Impact**: 90%+ citation accuracy vs. 60-70% in generic RAG systems, builds editorial credibility
 
-**3. Quality-First Generation**
+**6. Quality-First Generation**
 - **Innovation**: Refuse to generate when retrieval quality is insufficient (relevance score <0.75)
 - **Value**: No "garbage in, garbage out" - system admits when it lacks good sources
 - **Impact**: 85% usability score (vs. 65% for always-generate systems), journalists don't waste time editing poor drafts
-
-**4. Editorial Standards Compliance**
-- **Innovation**: Publication-specific guidelines loaded via RAG, automated compliance scoring
-- **Value**: Every draft matches house style, tone, and citation format automatically
-- **Impact**: Reduced editing time, consistent quality across all AI-assisted articles
 
 ---
 

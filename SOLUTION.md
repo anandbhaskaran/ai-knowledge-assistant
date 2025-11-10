@@ -172,7 +172,9 @@ graph LR
 
 ### 2.1 Technology Selection Analysis
 
-#### 2.1.1 Vector Database Comparison
+#### 2.1.1 Database Technology Evaluation
+
+**Vector Database Comparison**
 
 I evaluated four leading vector databases for this use case:
 
@@ -187,19 +189,18 @@ I evaluated four leading vector databases for this use case:
 | **Advanced Features** | Payload indexing, HNSW | Namespaces, metadata | GraphQL, modules | Simplicity |
 | **Lock-in Risk** | Low | Medium-High | Low | Low |
 
-**Decision: Qdrant**
+**Decision: Qdrant** for MVP-friendly deployment, excellent metadata filtering, HNSW performance, and easy migration path to production.
 
-**Reasoning**:
-- **MVP-friendly**: Free local deployment with Docker, production-ready architecture
-- **Metadata filtering**: Critical for filtering by date, source type, publication
-- **Performance**: HNSW algorithm provides sub-100ms queries at scale
-- **Migration path**: Easy transition from local to Qdrant Cloud for production
-- **Developer experience**: Excellent Python client, comprehensive documentation
+**Graph RAG Alternative Considered**
 
-**When to reconsider**:
-- Pinecone: If handling 100M+ vectors with minimal DevOps overhead
-- Weaviate: If GraphQL queries or multi-modal search become requirements
-- Chroma: For rapid prototyping or embedded use cases
+Graph RAG (Neo4j) was actually the first approach I explored - I even wrote about it: [RAG is Broken: We Need Connected Entities](https://thecompoundingcuriosity.substack.com/p/rag-is-broken-we-need-connected-entities). However, I ultimately chose vector-based RAG because:
+
+- **Complexity vs. Value**: Graph RAG requires NER pipeline, schema design, Cypher queries - 4-6 weeks for only 5-8% accuracy improvement
+- **Query Patterns**: Most journalist queries are "find articles about X" not "find relationships between X and Y"
+- **Archive Size**: Graph RAG needs 5,000+ articles for reliable entity extraction; current archive is smaller
+- **Time to MVP**: Vector RAG delivers in weeks vs. months for Graph RAG
+
+**When to Reconsider Graph RAG** (Phase 3-4): Investigative journalism workflows, 50k+ articles, fact-checking with contradiction detection, or user demand for relationship queries.
 
 #### 2.1.2 Understanding ReAct Agents
 
@@ -250,38 +251,6 @@ For a deeper dive into ReAct agents, I wrote a detailed explanation here: [Agent
 - Complex multi-agent fact-checking workflows
 - Stateful editing sessions with revision history
 - Advanced debugging with agent graph visualization
-
-#### 2.1.4 Graph RAG Consideration (Neo4j)
-
-**Initial Exploration**: Graph RAG was actually the first approach I explored for this project. I was excited by the potential of knowledge graphs to capture entity relationships and enable sophisticated reasoning over connected information. I even wrote a detailed blog post exploring this concept: [RAG is Broken: We Need Connected Entities](https://thecompoundingcuriosity.substack.com/p/rag-is-broken-we-need-connected-entities).
-
-**Why I Moved Away from It**:
-
-While Graph RAG is promising and theoretically powerful, I ultimately decided it was **over-engineering for this specific problem**. Here's why:
-
-| Aspect | Theoretical Benefits | Practical Reality for This Use Case |
-|--------|---------------------|-------------------------------------|
-| **Relationship Capture** | Explicitly models connections between entities, topics, sources | Most journalist queries are "find articles about X" not "find relationships between X and Y" |
-| **Multi-hop Reasoning** | Enables queries like "articles citing sources that contradict X" | Limited real-world use cases in typical article research workflow |
-| **Implementation Complexity** | Requires NER pipeline, graph schema design, Cypher queries | 4-6 week delay to MVP for marginal accuracy improvement (est. 5-8%) |
-| **Data Requirements** | Needs large corpus (5,000+ articles) for reliable entity extraction | Current archive is smaller; building graph infrastructure premature |
-| **Explainability** | Visual relationship graphs, traceable reasoning paths | Adds UI/UX development overhead without clear user demand |
-
-**Decision: Stick with Classic RAG**
-
-After thorough evaluation, I chose vector-based RAG with semantic search because:
-1. **Simplicity**: Straightforward ingestion pipeline, no entity extraction complexity
-2. **Proven effectiveness**: Semantic search handles 90%+ of journalist research queries well
-3. **Time to MVP**: Weeks instead of months
-4. **Lower risk**: No dependency on NER accuracy or graph schema evolution
-5. **Sufficient for problem**: The core need is "find relevant content", not "explore entity relationships"
-
-**When to Reconsider** (Phase 3-4):
-- Investigative journalism workflows requiring source cross-referencing
-- Large archive (50k+ articles) with rich entity metadata
-- Fact-checking features needing contradiction detection
-- User feedback indicating need for relationship-based queries
-- Budget and timeline allow for the additional complexity
 
 ### 2.2 Complete Technology Stack
 

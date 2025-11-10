@@ -57,10 +57,12 @@ Query: "AI Impact on Central Bank Policy"
 **Strategic Decisions**:
 
 **1. No Fine-Tuning for Initial Launch (Defer to Phase 3)**
+
 - **Rationale**: RAG architecture better suited for journalism use case - enables real-time access to latest articles and evolving news without retraining; fine-tuning captures style/patterns but can't access new information or cite specific sources; archive content change frequently, requiring constant retraining cycles; further hosting the fine-tuned model incurs additional costs and maintenance overhead
 - **Reconsider when**: (1) need to embed highly specific house style that prompting can't capture, (2) cost optimization required after validating product-market fit (fine-tuned smaller models for routine tasks), or (3) A/B testing shows >15% quality improvement justifies maintenance overhead
 
 **2. Graph RAG Deferred (Phase 3)**
+
 - I've explored and even written about [Graph RAG advantages](https://thecompoundingcuriosity.substack.com/p/rag-is-broken-we-need-connected-entities) but rejected for MVP: adds 4-6 weeks, as we will be implementing an over-engineered solution for a simpler problem
 - **Reconsider** when: investigative workflows, archive >10k articles, >20% queries need relationship discovery
 
@@ -169,15 +171,15 @@ Both prompts include: (1) editorial guidelines, (2) structural scaffolding with 
 
 **Technical Debt** (with payoff plan):
 
-1. Vector-only search → Phase 2 Month 5: Add BM25 + reranking when >10% queries <0.70 relevance
-2. Manual evaluation → Phase 1 Month 9: Automated pipeline after 100+ labeled examples
-3. Single agent → Phase 3: Multi-agent only if data shows clear bottlenecks
+1. Vector-only search (Phase 2): Add BM25 + reranking when >10% queries <0.70 relevance
+2. Manual evaluation (Phase 1): Automated pipeline after 100+ labeled examples
+3. Single agent (Phase 3): Multi-agent only if data shows clear bottlenecks
 
 **Competitive Advantage**: Most AI journalism tools prioritize speed over trust. Citation integrity + human review = credibility over throughput.
 
 ## 8. Conclusion
 
-**Why This Wins**:
+Why This Wins:
 
 1. **Architecture Validated**: Prototype shows great outcomes with easy to use interface
 2. **Strategic Choices**: Rejected Graph RAG, deferred fine-tuning, chose ReActAgent, vendor-independent abstractions with LlamaIndex
@@ -193,7 +195,6 @@ Both prompts include: (1) editorial guidelines, (2) structural scaffolding with 
 | Adaptability | Editorial guidelines | Hard-coded prompts | Scales across publications |
 | Cost Control | Optional web search, caching roadmap | Always-on APIs | Flexible cost/quality trade-off |
 | Transparency | Agent reasoning logs visible | Black-box | Journalists understand WHY |
-
 
 **Contact**: [Anand Bhaskaran](https://home.anand-creations.com/) | [MVP in GitHub](https://github.com/anandbhaskaran/ai-knowledge-assistant) | [Live Demo](https://www.loom.com/share/3b5cd0cc9ee34e34a9852745c75507ff) | [My Blogs](https://home.anand-creations.com/blog)
 

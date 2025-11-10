@@ -198,51 +198,34 @@ I evaluated four leading vector databases for this use case:
 - Weaviate: If GraphQL queries or multi-modal search become requirements
 - Chroma: For rapid prototyping or embedded use cases
 
-#### 2.1.2 Agent Framework Comparison
+#### 2.1.2 Understanding ReAct Agents
 
-```mermaid
-graph TB
-    subgraph Frameworks["Agent Framework Evaluation"]
-        LL[LlamaIndex ReActAgent]
-        LC[LangChain ReActAgent]
-        LG[LangGraph]
-        Custom[Custom Implementation]
-    end
+**What is ReAct?** ReAct (Reasoning + Acting) is an agent pattern where LLMs alternate between **thinking** (reasoning about what to do) and **acting** (using tools to gather information). This creates a transparent, step-by-step problem-solving loop.
 
-    subgraph Criteria["Decision Criteria"]
-        Simple[Simplicity]
-        Control[Control]
-        Debug[Debuggability]
-        Perf[Performance]
-        Maint[Maintainability]
-    end
+**Why ReAct for Journalist Research?**
 
-    LL -.->|High| Simple
-    LL -.->|Medium| Control
-    LL -.->|High| Debug
-    LL -.->|High| Perf
-    LL -.->|High| Maint
+This use case is a perfect fit for ReAct agents because:
 
-    LC -.->|Medium| Simple
-    LC -.->|Medium| Control
-    LC -.->|Medium| Debug
-    LC -.->|Medium| Perf
-    LC -.->|Medium| Maint
+1. **Multi-step reasoning required**: "I need historical context → search archive → found context but need recent data → search web → now synthesize"
+2. **Tool orchestration**: Agent autonomously decides when to use archive retrieval vs. web search vs. generation
+3. **Transparent process**: Journalists can see *why* sources were chosen and *how* the agent reasoned through the task
+4. **Dynamic adaptation**: If archive search fails, agent automatically tries web search or reformulates query
 
-    LG -.->|Low| Simple
-    LG -.->|Highest| Control
-    LG -.->|Medium| Debug
-    LG -.->|High| Perf
-    LG -.->|Medium| Maint
-
-    Custom -.->|Low| Simple
-    Custom -.->|Highest| Control
-    Custom -.->|Low| Debug
-    Custom -.->|Medium| Perf
-    Custom -.->|Low| Maint
-
-    style LL fill:#90EE90
+**Example ReAct Loop**:
 ```
+Thought: I need historical context on central bank forecasting
+Action: archive_retrieval("central bank inflation forecasting methods")
+Observation: Found 3 articles from 2022-2023 on traditional models
+Thought: Need recent developments on AI adoption
+Action: web_search("central banks AI machine learning 2024")
+Observation: Found Fed paper on ML models, ECB announcement
+Thought: Sufficient sources gathered, ready to generate outline
+Action: Generate structured outline with citations
+```
+
+For a deeper dive into ReAct agents, I wrote a detailed explanation here: [Agentic AI Part 1: Simple ReAct Agent](https://thecompoundingcuriosity.substack.com/p/agentic-ai-part-1-simple-react-agent)
+
+#### 2.1.3 Agent Framework Comparison
 
 | Framework | Pros | Cons | Best For |
 |-----------|------|------|----------|
@@ -265,7 +248,7 @@ graph TB
 - Stateful editing sessions with revision history
 - Advanced debugging with agent graph visualization
 
-#### 2.1.3 Graph RAG Consideration (Neo4j)
+#### 2.1.4 Graph RAG Consideration (Neo4j)
 
 **Initial Exploration**: Graph RAG was actually the first approach I explored for this project. I was excited by the potential of knowledge graphs to capture entity relationships and enable sophisticated reasoning over connected information. I even wrote a detailed blog post exploring this concept: [RAG is Broken: We Need Connected Entities](https://thecompoundingcuriosity.substack.com/p/rag-is-broken-we-need-connected-entities).
 

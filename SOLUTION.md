@@ -12,73 +12,7 @@ This proposal outlines an agent-based RAG (Retrieval-Augmented Generation) syste
 
 ### 1.1 High-Level Architecture
 
-```mermaid
-flowchart TB
-    subgraph Client["Client Layer"]
-        UI[Web Interface]
-        API_Client[API Client]
-    end
-
-    subgraph API["FastAPI Service Layer"]
-        Router[API Router]
-        Ideas[Ideas Endpoint]
-        Outline[Outline Endpoint]
-        Draft[Draft Endpoint]
-    end
-
-    subgraph Orchestration["Agent Orchestration Layer"]
-        OutlineAgent[Outline Agent<br/>ReActAgent]
-        DraftAgent[Draft Agent<br/>ReActAgent]
-    end
-
-    subgraph Tools["Tool Layer"]
-        ArchiveTool[Archive Retrieval Tool<br/>Vector Search]
-        WebTool[Web Search Tool<br/>Tavily API]
-    end
-
-    subgraph Data["Data Layer"]
-        VectorDB[(Qdrant<br/>Vector Store)]
-        EmbedAPI[OpenAI Embeddings<br/>text-embedding-ada-002]
-        LLMAPI[OpenAI GPT-4<br/>Generation]
-        WebAPI[Tavily API<br/>Web Search]
-    end
-
-    subgraph Content["Content Sources"]
-        Archive[Article Archive<br/>Markdown Files]
-        Web[Web Sources<br/>Real-time Data]
-    end
-
-    UI --> Router
-    API_Client --> Router
-    Router --> Ideas
-    Router --> Outline
-    Router --> Draft
-
-    Ideas --> VectorDB
-    Outline --> OutlineAgent
-    Draft --> DraftAgent
-
-    OutlineAgent --> ArchiveTool
-    OutlineAgent --> WebTool
-    DraftAgent --> ArchiveTool
-    DraftAgent --> WebTool
-
-    ArchiveTool --> VectorDB
-    ArchiveTool --> EmbedAPI
-    WebTool --> WebAPI
-
-    OutlineAgent --> LLMAPI
-    DraftAgent --> LLMAPI
-
-    Archive --> VectorDB
-    Web --> WebAPI
-
-    style OutlineAgent fill:#e1f5ff
-    style DraftAgent fill:#e1f5ff
-    style ArchiveTool fill:#fff4e6
-    style WebTool fill:#fff4e6
-    style VectorDB fill:#f0f0f0
-```
+![High-Level Architecture](./high-level-architecure.png)
 
 ### 1.2 Agent-Based Retrieval Flow
 

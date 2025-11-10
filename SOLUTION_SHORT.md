@@ -5,38 +5,18 @@
 
 ## Executive Summary
 
-This proposal presents an **agent-based RAG system** that transforms editorial workflows by combining institutional archive knowledge with real-time web intelligence. The system generates evidence-backed article drafts with verifiable citations, reducing research-to-draft time from 4+ hours to <90 minutes.
+This proposal presents an **agent-based RAG system** that transforms editorial workflows by combining institutional archive knowledge with real-time web intelligence. The system generates evidence-backed article drafts with verifiable citations, reducing research-to-draft time drastically.
 
 **Core Innovation**: Multi-source agentic retrieval with citation integrity architecture. Unlike generic RAG systems using single databases and hard-coded pipelines, this solution deploys autonomous ReAct agents that intelligently orchestrate archive search and web research, ensuring every claim traces to verifiable sources through pre-numbered validation.
 
-**Business Value**: 60-70% time savings • <$0.50/article cost • Scalable to 100+ journalists • 240x ROI per article
-
-**Credibility**: Built working prototype achieving 90%+ citation accuracy, <30s latency, $0.26/article cost—validating architecture before proposing full development.
+**Credibility**: Built working prototype validating architecture before proposing full development.
 
 ---
 
 ## 1. System Design & Architecture
 
 **Multi-Tier Architecture**:
-```
-User Request → FastAPI REST → ReActAgent Orchestrator
-                                    ↓
-                   ┌────────────────┴────────────────┐
-                   ↓                                 ↓
-            Archive Tool                      Web Search Tool
-         (Vector Search)                   (Real-time Intelligence)
-                   ↓                                 ↓
-           Qdrant Vector DB                    Tavily/Google CSE
-                   └────────────┬────────────────────┘
-                                ↓
-                    Source Ranking & Validation
-                                ↓
-                         GPT-4 Synthesis
-                                ↓
-                    Quality Assurance Pipeline
-                                ↓
-                    Journalist Review Interface
-```
+![High-Level Architecture](https://github.com/anandbhaskaran/ai-knowledge-assistant/blob/main/high-level-architecure.png)
 
 **Why ReAct Agents?** Journalism demands multi-step reasoning: historical context (archive), recent developments (web), expert commentary, and synthesis across contradictory sources. Traditional RAG hard-codes retrieval; **ReAct agents** autonomously decide which tools to use, reformulate queries if results poor, and handle contradictions.
 
@@ -58,7 +38,7 @@ Query: "AI Impact on Central Bank Policy"
 
 **Advantages**: (1) Adaptive retrieval with query reformulation, (2) Multi-source intelligence, (3) Transparent reasoning, (4) Contradiction handling
 
-**Data Pipeline**: Markdown/PDF articles → semantic chunking (1000 tokens) → OpenAI embeddings (ada-002, 1536-dim) → Qdrant vector store (HNSW, <100ms retrieval) → metadata filtering (date, source, author)
+**Data Pipeline**: Text articles → SentenceSplitter (1024 tokens with overlap of 20 tokens) → OpenAI embeddings (ada-002, 1536-dim) → Qdrant vector store → metadata for citations
 
 ---
 
@@ -72,14 +52,14 @@ Query: "AI Impact on Central Bank Policy"
 | **Embeddings** | OpenAI ada-002 | Industry standard, $0.0001/1k tokens | Cost-effective | Cohere (test Phase 2) |
 | **Web Search** | Tavily API | LLM-optimized, $1/1000 searches | $0.05-0.10/article | Google CSE (fallback) |
 | **API** | FastAPI | Type-safe, async, auto-docs | Open-source | Flask |
-| **Caching** | Redis | Response caching (-40% cost Phase 2) | ~$50/mo | In-memory |
 | **Monitoring** | Grafana + Langfuse | Metrics + LLM observability | ~$100/mo | Next phase |
+| **Frontend** | React + Shadcn/ui + TailwindCSS | Rapid UI dev, component library | Vue.js |
 
 **Strategic Decisions**:
 
 **1. No Fine-Tuning for Initial Launch (Defer to Phase 3)**
 - **Rationale**: RAG architecture better suited for journalism use case - enables real-time access to latest articles and evolving news without retraining; fine-tuning captures style/patterns but can't access new information or cite specific sources; archive content change frequently, requiring constant retraining cycles; further hosting the fine-tuned model incurs additional costs and maintenance overhead
-- **Reconsider when**: (1) need to embed highly specific house style that prompting can't capture, (2) cost optimization required after validating product-market fit (fine-tuned smaller models for routine tasks), (3) ≥1,000 editor-approved articles available as training data, or (4) A/B testing shows >15% quality improvement justifies maintenance overhead
+- **Reconsider when**: (1) need to embed highly specific house style that prompting can't capture, (2) cost optimization required after validating product-market fit (fine-tuned smaller models for routine tasks), or (3) A/B testing shows >15% quality improvement justifies maintenance overhead
 
 **2. Graph RAG Deferred (Phase 3)**
 - I've explored and even written about [Graph RAG advantages](https://thecompoundingcuriosity.substack.com/p/rag-is-broken-we-need-connected-entities) but rejected for MVP: adds 4-6 weeks, as we will be implementing an over-engineered solution for a simpler problem
@@ -94,7 +74,7 @@ Query: "AI Impact on Central Bank Policy"
 **Approach**: Prompt Engineering (Phases 1-2) → Conditional Fine-Tuning (Phase 3)
 
 **Phase 1-2: ReAct Agents with Prompt Optimization** (validated in prototype)
-1. ReAct agents autonomously orchestrate archive + web search tools
+1. ReAct agents autonomously orchestrate archive retrieval + web search tools
 2. Structured prompting with editorial guidelines
 3. Pre-numbered source lists (agent can ONLY cite provided sources)
 4. Self-verification checklists in prompts
@@ -128,7 +108,7 @@ Query: "AI Impact on Central Bank Policy"
 ```markdown
 ROLE: AI Financial Journalist Assistant creating evidence-backed outlines.
 
-EDITORIAL GUIDELINES: {editorial_guidelines}  # RAG-loaded
+EDITORIAL GUIDELINES: {editorial_guidelines} 
 
 ARTICLE REQUEST:
 - Headline: "Central Banks Embrace AI for Inflation Forecasting"
@@ -216,10 +196,10 @@ SELF-CHECK:
 
 ## 6. Implementation Roadmap
 
-**Phase 0: Prototype (Completed)** - A demoable prototype validating architecture
+**Phase 0: Prototype (Completed)** - A demo-able prototype validating architecture
 
 **Phase 1: Production MVP**
-- Authentication + Other infra (Kubernetes, CI/CD, monitoring)
+- Authentication + Other infra (Kubernetes, CI/CD, monitoring, periodic ingestion pipelines)
 - Grafana + Langfuse observability (100% tracing)
 - Safety guardrails (bias detection, PII redaction)
 - Granular citations, preview popups (>4.0/5 feedback)
@@ -228,7 +208,7 @@ SELF-CHECK:
 
 **Phase 2: Scale & Optimization** 
 
-| Feature | Value | Approach | Metric |
+| Feature | Expected Value | Approach | Metric |
 |---------|-------|----------|--------|
 | Hybrid search | +15% quality | BM25 + vector + cross-encoder | Relevance 0.85→0.95 |
 | Multi-draft comparison | Better choice | 2-3 angles, journalist selects | +20% satisfaction |

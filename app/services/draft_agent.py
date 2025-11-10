@@ -185,7 +185,27 @@ You NEVER say "here is the article" or provide explanations - you just write the
         max_iterations=20
     )
 
-    # Format sources for prompt
+    # If web search is enabled, perform a web search first and add to sources
+    if enable_web_search:
+        try:
+            from app.services.tools import web_search_tool_fn
+            from app.services.outline_agent import extract_sources_from_tool_output
+
+            logger.info("Performing mandatory web search for draft...")
+            web_query = f"{headline} {thesis}"
+            web_output = web_search_tool_fn(web_query, max_results=3)
+            web_sources = extract_sources_from_tool_output(web_output, source_type="web")
+
+            if web_sources:
+                # Add web sources to the beginning of sources list so they get lower numbers
+                sources = web_sources + sources
+                logger.info(f"Added {len(web_sources)} web sources to draft sources")
+            else:
+                logger.warning("Web search enabled but no results found")
+        except Exception as e:
+            logger.warning(f"Failed to perform web search: {e}")
+
+    # Format sources for prompt (after adding web sources)
     sources_text = format_sources_for_prompt(sources)
     key_facts_text = "\n".join([f"- {fact}" for fact in key_facts]) if key_facts else "None provided"
 
@@ -210,8 +230,10 @@ KEY FACTS TO INCORPORATE:
 OUTLINE TO FOLLOW:
 {outline}
 
-AVAILABLE SOURCES (from outline generation):
+AVAILABLE SOURCES (includes both archive and web sources):
 {sources_text}
+
+NOTE: Sources marked as "Type: web" are from recent web searches. {"You MUST cite at least 1-2 web sources in your article to provide current information." if enable_web_search else ""}
 
 WRITING INSTRUCTIONS:
 
@@ -263,7 +285,7 @@ WRITING INSTRUCTIONS:
 
 6. WHEN TO USE TOOLS:
    - Use archive_retrieval tool ONLY if you need additional specific information not in provided sources
-   - {"Use web_search tool for very recent information if needed" if enable_web_search else "Web search is disabled - use only provided sources and archive"}
+   - {f"REQUIRED: You MUST use the web_search tool at least once to find recent web sources and cite them in your article. Search for: '{headline}' or related current information. Include at least 1-2 citations from web sources in your draft." if enable_web_search else "Web search is disabled - use only provided sources and archive"}
    - Do NOT use tools unnecessarily - prioritize the provided sources
    - Remember: citations are simply [1], [2], [3], etc. - no tool needed
 
@@ -300,7 +322,7 @@ Just write the article directly. Start NOW with "# {headline}" followed by the a
 """
 
     try:
-        logger.info(f"Generating draft for headline: {headline} (target: {target_word_count} words)")
+        logger.info(f"Generating draft for headline: {headline} (target: {target_word_count} words, web_search: {enable_web_search})")
 
         # Run agent
         response = agent.chat(agent_prompt)
@@ -347,6 +369,14 @@ Just write the article directly. Start NOW with "# {headline}" followed by the a
 
         if source_tracking['citation_count'] == 0:
             warnings.append("No citations found in draft - all claims must be cited")
+
+        # Check if web sources were used when web search was enabled
+        if enable_web_search:
+            web_sources_cited = sum(1 for s in source_tracking['sources_used'] if s.get('source_type') == 'web')
+            if web_sources_cited == 0:
+                warnings.append("Web search was enabled but no web sources were cited in the draft")
+            else:
+                logger.info(f"Web sources cited: {web_sources_cited}")
 
         warning_text = "; ".join(warnings) if warnings else None
 

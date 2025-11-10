@@ -136,10 +136,10 @@ def generate_outline_with_agent(
     # Load editorial guidelines
     editorial_guidelines = load_editorial_guidelines()
 
-    # Create LLM
+    # Create LLM - Use GPT-4 Turbo for larger context window (128K tokens)
     llm = OpenAI(
         api_key=settings.OPENAI_API_KEY,
-        model="gpt-4",
+        model="gpt-4-turbo-preview",
         temperature=0.7
     )
 
@@ -162,11 +162,13 @@ def generate_outline_with_agent(
     web_search_instructions = ""
     if enable_web_search:
         web_search_instructions = """
-2. Use the web_search tool for very recent information and external perspectives
+2. REQUIRED: Use the web_search tool at least once for recent information and external perspectives
+   - You MUST perform at least one web search to find current sources
    - Find breaking news and recent developments
    - Get diverse viewpoints from authoritative sources
    - Gather current statistics and data
    - Find expert opinions from reputable publications
+   - The outline should include citations from both archive AND web sources
 """
     else:
         web_search_instructions = """
@@ -270,14 +272,14 @@ Begin by using the archive_retrieval tool to gather information.
 
             # Get archive sources
             logger.info("Extracting archive sources...")
-            archive_output = archive_retrieval_tool_fn(search_query, top_k=10)
+            archive_output = archive_retrieval_tool_fn(search_query, top_k=5)
             archive_sources = extract_sources_from_tool_output(archive_output, source_type="archive")
 
             # Get web sources only if web search is enabled
             web_sources = []
             if enable_web_search:
                 logger.info("Extracting web search sources...")
-                web_output = web_search_tool_fn(search_query, max_results=5)
+                web_output = web_search_tool_fn(search_query, max_results=3)
                 web_sources = extract_sources_from_tool_output(web_output, source_type="web")
 
             # Combine and rank all sources by relevance score

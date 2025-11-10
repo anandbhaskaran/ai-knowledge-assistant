@@ -9,13 +9,13 @@ from app.services.retriever import get_query_engine, filter_by_relevance
 logger = logging.getLogger(__name__)
 
 
-def archive_retrieval_tool_fn(query: str, top_k: int = 10) -> str:
+def archive_retrieval_tool_fn(query: str, top_k: int = 5) -> str:
     """
     Retrieve relevant information from the article archive in Qdrant.
 
     Args:
         query: The search query to find relevant articles
-        top_k: Number of documents to retrieve (default: 10)
+        top_k: Number of documents to retrieve (default: 5)
 
     Returns:
         A formatted string containing retrieved articles with metadata and relevance scores
@@ -49,7 +49,7 @@ Date: {metadata.get('date', 'Unknown')}
 URL: {metadata.get('url', 'N/A')}
 
 Content:
-{node.node.get_text()[:500]}...
+{node.node.get_text()[:300]}...
 
 ---
 """

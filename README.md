@@ -289,6 +289,11 @@ Each source includes:
 * Expand metadata extraction with NER models
 * Add more specialized tools (e.g., fact-checking, expert databases)
 
+# Export markdown
+```
+pandoc "./SOLUTION_SHORT.md" -o "./SOLUTION_SHORT.pdf" --pdf-engine=xelatex -V geometry:"top=0.75in,bottom=0.75in,left=0.75in,right=0.75in" -V fontsize=11pt -V linestretch=1.05 -V colorlinks=true -V linkcolor=RoyalBlue -V urlcolor=RoyalBlue
+```
+
 ## License
 
 MIT
@@ -299,4 +304,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-Built with ❤️ using LlamaIndex and Qdrant.
+Built with ❤️ to be a AI Innovation Lead.

@@ -72,8 +72,8 @@ Query: "AI Impact on Central Bank Policy"
 
 **Phase 1-2: ReAct Agents with Prompt Optimization** (validated in prototype)
 
-1. ReAct agents autonomously orchestrate archive retrieval + web search tools
-2. Structured prompting with editorial guidelines
+1. [ReAct agents](https://thecompoundingcuriosity.substack.com/p/agentic-ai-part-1-simple-react-agent) autonomously orchestrate archive retrieval + web search tools
+2. Structured prompting with [editorial guidelines](https://github.com/anandbhaskaran/ai-knowledge-assistant/blob/main/data/guidlines/editorial-guidelines.md)
 3. Pre-numbered source lists (agent can ONLY cite provided sources)
 4. Self-verification checklists in prompts
 5. Few-shot examples (3-5) for complex reasoning tasks
@@ -103,7 +103,7 @@ Two specialized prompts guide the ReActAgent through research and writing:
 
 **Draft Generation**: Implements **pre-numbered source lists** preventing hallucinations. Agent receives ranked sources `[1-12]` with excerpts and can ONLY cite using `[N]` notation. Post-generation validation ensures all `[N]` references exist. Result: 90%+ citation accuracy vs. 60-70% in generic RAG.
 
-Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffolding with section templates, (3) self-verification checklists, (4) strict citation format enforcement (`[Source, Title, Date]`).
+Both prompts include: (1) editorial guidelines, (2) structural scaffolding with section templates, (3) self-verification checklists, (4) strict citation format enforcement (`[Source, Title, Date]`).
 
 *Full prompts in [Appendix A & B](#appendix-full-prompt-examples).*
 
@@ -138,7 +138,7 @@ Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffo
 - Automated evaluation (500 drafts baseline)
 - Pilot launch (10-20 journalists, 80% weekly active, <15% override)
 
-**Phase 2: Scale & Optimization** 
+**Phase 2: Scale & Optimization**
 
 | Feature | Expected Value | Approach | Metric |
 |---------|-------|----------|--------|

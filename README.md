@@ -56,6 +56,66 @@ TOP_K_RESULTS=5
 MIN_RELEVANCE_SCORE=0.75
 HIGH_RELEVANCE_THRESHOLD=0.85
 ```
+### 4. Setup with docker (Recomended)
+Quick Start
+
+  # 1. Make sure your .env file has the required API keys
+  # (Your existing .env file should work fine)
+
+  # 2. Start all services
+  docker-compose up -d
+
+  # Or use the startup script
+  ./docker-start.sh
+
+  # 3. Access the application
+  # Frontend: http://localhost:3000
+  # Backend:  http://localhost:8000
+  # Qdrant:   http://localhost:6333/dashboard
+
+  Service Architecture
+
+  ┌─────────────────┐
+  │   Frontend      │  http://localhost:3000
+  │  (React+Nginx)  │
+  └────────┬────────┘
+           │
+           ▼
+  ┌─────────────────┐
+  │    Backend      │  http://localhost:8000
+  │    (FastAPI)    │
+  └────────┬────────┘
+           │
+           ▼
+  ┌─────────────────┐
+  │    Qdrant       │  http://localhost:6333
+  │ (Vector Store)  │
+  └─────────────────┘
+
+  Key Features
+
+  - Health Checks: All services monitor each other's health
+  - Dependency Management: Services start in correct order
+  - Persistent Storage: Qdrant data survives container restarts
+  - Environment Variables: Loaded from your existing .env file
+  - Network Isolation: Services communicate on private bridge network
+  - Production Ready: Includes security headers, compression, and optimization
+
+  Common Commands
+
+  # View logs
+  docker-compose logs -f
+
+  # Stop services
+  docker-compose down
+
+  # Rebuild and restart
+  docker-compose up -d --build
+
+  # Ingest articles
+  docker-compose exec backend python -m app.services.ingestion data/articles --clear
+
+  All the Docker configuration is now ready! Just run docker-compose up -d to start everything. Check out DOCKER.md for detailed documentation and troubleshooting.
 
 ### 4. Set Up Vector Database
 
@@ -88,25 +148,6 @@ This will load the sample articles, create an index, and generate article ideas 
 You can also use the clear-and-ingest demo script which demonstrates both clearing data and ingestion:
 
 ```bash
-python clear_and_ingest_demo.py
-```
-
-### 1. Ingest Articles
-
-Before generating content, you need to ingest articles into the vector database:
-
-```bash
-# Create a data directory with articles (txt, md, pdf, etc.)
-mkdir -p data/articles
-# Add your articles to the data/articles directory
-
-# Run the ingestion script (appends to existing data)
-python -c "from app.services.ingestion import ingest_articles; ingest_articles('data/articles')"
-
-# Run the ingestion script with clearing existing data (default behavior you want)
-python -c "from app.services.ingestion import ingest_articles; ingest_articles('data/articles', clear_data=True)"
-
-# Alternatively, use the ingestion module directly with --clear flag
 python -m app.services.ingestion data/articles --clear
 ```
 
@@ -211,12 +252,6 @@ knowledge-assistant/
 └── README.md
 ```
 
-### Running Tests
-
-```bash
-pytest
-```
-
 ## Enhanced Metadata
 
 The system automatically extracts rich metadata from article content during ingestion, improving retrieval quality and relevance:
@@ -248,8 +283,6 @@ Each source includes:
 - Complete metadata: title, source, date, URL, text excerpt
 
 ## Future Improvements
-
-* Add web UI for journalists
 * Implement proper chunking strategies for different document types
 * Add evaluation framework for generated content
 * Enhance citation tracking and verification

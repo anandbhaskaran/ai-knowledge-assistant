@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+
+# Build outputs
+dist/
+.vite/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env.local
+.env.*.local
+
+# Documentation
+*.md
+!CLAUDE.md
+
+# Cache
+.cache/
+.turbo/
+.eslintcache
+
+# Misc
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Bolt and Claude
+.bolt/
+.claude/

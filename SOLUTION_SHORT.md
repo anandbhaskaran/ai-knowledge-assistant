@@ -1,22 +1,20 @@
 # AI Journalist Assistant - Technical Proposal
 **Anand Bhaskaran** | November 2025
 
----
-
 ## Executive Summary
 
-This proposal presents an **agent-based RAG system** that transforms editorial workflows by combining institutional archive knowledge with real-time web intelligence. The system generates evidence-backed article drafts with verifiable citations, reducing research-to-draft time drastically.
+This proposal presents an **agent-based RAG system** that transforms editorial workflows by combining institutional [archive knowledge](https://github.com/anandbhaskaran/ai-knowledge-assistant/tree/main/data/articles) with real-time web intelligence. The system generates evidence-backed article drafts following the [editorial guidelines](https://github.com/anandbhaskaran/ai-knowledge-assistant/blob/main/data/guidlines/editorial-guidelines.md) with verifiable citations, reducing research-to-draft time drastically.
 
 **Core Innovation**: Multi-source agentic retrieval with citation integrity architecture. Unlike generic RAG systems using single databases and hard-coded pipelines, this solution deploys autonomous ReAct agents that intelligently orchestrate archive search and web research, ensuring every claim traces to verifiable sources through pre-numbered validation.
 
 **Credibility**: Built working prototype validating architecture before proposing full development.
 
----
 
 ## 1. System Design & Architecture
 
 **Multi-Tier Architecture**:
-![High-Level Architecture](https://github.com/anandbhaskaran/ai-knowledge-assistant/blob/main/high-level-architecure.png)
+
+![High-Level Architecture](./high-level-architecure.png)
 
 **Why ReAct Agents?** Journalism demands multi-step reasoning: historical context (archive), recent developments (web), expert commentary, and synthesis across contradictory sources. Traditional RAG hard-codes retrieval; **ReAct agents** autonomously decide which tools to use, reformulate queries if results poor, and handle contradictions.
 
@@ -39,8 +37,6 @@ Query: "AI Impact on Central Bank Policy"
 **Advantages**: (1) Adaptive retrieval with query reformulation, (2) Multi-source intelligence, (3) Transparent reasoning, (4) Contradiction handling
 
 **Data Pipeline**: Text articles → SentenceSplitter (1024 tokens with overlap of 20 tokens) → OpenAI embeddings (ada-002, 1536-dim) → Qdrant vector store → metadata for citations
-
----
 
 ## 2. Tools & Technologies
 
@@ -66,8 +62,6 @@ Query: "AI Impact on Central Bank Policy"
 - **Reconsider** when: investigative workflows, archive >10k articles, >20% queries need relationship discovery
 
 **3. Vendor Independence**: LlamaIndex (and LangGraph) abstractions enable LLM swapping (OpenAI ↔ Claude ↔ Llama), embedding changes, multi-search APIs without refactoring
-
----
 
 ## 3. Training & Fine-Tuning Strategy
 
@@ -97,8 +91,6 @@ Query: "AI Impact on Central Bank Policy"
 
 **Investment Thesis**: Exhaust low-hanging optimization (caching, hybrid search, prompts) before expensive fine-tuning. Follows OpenAI recommendation: prompt engineering → RAG → fine-tuning.
 
----
-
 ## 4. Prompt Design Examples
 
 Two specialized prompts guide the ReActAgent through research and writing:
@@ -110,8 +102,6 @@ Two specialized prompts guide the ReActAgent through research and writing:
 Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffolding with section templates, (3) self-verification checklists, (4) strict citation format enforcement (`[Source, Title, Date]`).
 
 *Full prompts in Appendix A & B.*
-
----
 
 ## 5. Success Metrics
 
@@ -130,8 +120,6 @@ Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffo
 - **Automated**: Citation accuracy, relevance scores, latency (P50/P95/P99), cost, error rates
 - **Human**: Editorial quality ratings, factual correctness, bias detection, NPS surveys
 - **Loop**: Feedback → Failure Analysis → Hypothesis → Staging → A/B Test (20%) → Production
-
----
 
 ## 6. Implementation Roadmap
 
@@ -161,8 +149,6 @@ Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffo
 | Multi-language | International expansion | 3 languages via GPT-4 | 20% non-English usage |
 | Source relationships | Investigative workflows | Graph RAG (optional) | 10% use relationship queries |
 | Analytics dashboard | Editorial insights | Trending topics, coverage gaps | 80% editor adoption |
-
----
 
 ## 7. Risks & Mitigation
 

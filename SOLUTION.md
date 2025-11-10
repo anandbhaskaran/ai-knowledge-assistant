@@ -134,19 +134,19 @@ sequenceDiagram
 | **Web Search** | Tavily API (optional per request) | Real-time information retrieval | Flexible on/off control, optimized for LLM consumption, cost-effective when needed |
 | **Editorial Guidelines** | Markdown ([example](https://github.com/anandbhaskaran/ai-knowledge-assistant/blob/main/data/guidlines/editorial-guidelines.md)) | Publication style & quality standards | Ensures consistent tone, voice, citation format across all outputs |
 
-### 1.4 Data Flow Architecture
+### 1.4 Data Ingestion Pipeline
 
 ```mermaid
 graph LR
-    A[Articles] --> B[Embed & Store]
-    B --> C[(Vector DB)]
-    D[Query] --> E[Search]
-    C --> E
-    E --> F[GPT-4 + Context]
-    F --> G[Validated Output]
+    A[Markdown Articles] --> B[Document Loader]
+    B --> C[Text Chunking<br/>1000 tokens]
+    C --> D[Metadata Extraction<br/>title, date, source]
+    D --> E[OpenAI Embeddings<br/>text-embedding-ada-002]
+    E --> F[(Qdrant Vector Store<br/>1536 dimensions)]
+    F --> G[Semantic Search Ready]
 
-    style C fill:#f0f0f0
-    style F fill:#e1f5ff
+    style F fill:#f0f0f0
+    style E fill:#e1f5ff
 ```
 
 ---

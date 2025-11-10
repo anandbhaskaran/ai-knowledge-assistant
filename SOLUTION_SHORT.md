@@ -9,6 +9,9 @@ This proposal presents an **agent-based RAG system** that transforms editorial w
 
 **Credibility**: Built working prototype validating architecture before proposing full development.
 
+**Live Demo**: [System in Action](https://www.loom.com/share/3b5cd0cc9ee34e34a9852745c75507ff) - 5-minute walkthrough showing MVP that I built based on this proposal.
+
+_Note: This article is also available on [GitHub](https://github.com/anandbhaskaran/ai-knowledge-assistant/blob/main/SOLUTION_SHORT.md) with full source code and documentation._
 
 ## 1. System Design & Architecture
 
@@ -68,6 +71,7 @@ Query: "AI Impact on Central Bank Policy"
 **Approach**: Prompt Engineering (Phases 1-2) → Conditional Fine-Tuning (Phase 3)
 
 **Phase 1-2: ReAct Agents with Prompt Optimization** (validated in prototype)
+
 1. ReAct agents autonomously orchestrate archive retrieval + web search tools
 2. Structured prompting with editorial guidelines
 3. Pre-numbered source lists (agent can ONLY cite provided sources)
@@ -101,7 +105,7 @@ Two specialized prompts guide the ReActAgent through research and writing:
 
 Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffolding with section templates, (3) self-verification checklists, (4) strict citation format enforcement (`[Source, Title, Date]`).
 
-*Full prompts in Appendix A & B.*
+*Full prompts in [Appendix A & B](#appendix-full-prompt-examples).*
 
 ## 5. Success Metrics
 
@@ -126,6 +130,7 @@ Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffo
 **Phase 0: Prototype (Completed)** - A demo-able prototype validating architecture
 
 **Phase 1: Production MVP**
+
 - Authentication + Other infra (Kubernetes, CI/CD, monitoring, periodic ingestion pipelines)
 - Grafana + Langfuse observability (100% tracing)
 - Safety guardrails (bias detection, PII redaction)
@@ -144,6 +149,7 @@ Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffo
 | Chat with Archive | Better quality publication | Implement chat interface with memory | user engagement |
 
 **Phase 3: Further enhancements** 
+
 | Feature | Moat | Implementation | Metric |
 |---------|------|----------------|--------|
 | Multi-language | International expansion | 3 languages via GPT-4 | 20% non-English usage |
@@ -162,13 +168,12 @@ Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffo
 | **Over-Reliance on AI** | Critical | Position as "assistant" in UX, preserve journalist control | Training on AI limitations, quality incentives | Medium (cultural challenge) |
 
 **Technical Debt** (with payoff plan):
+
 1. Vector-only search → Phase 2 Month 5: Add BM25 + reranking when >10% queries <0.70 relevance
 2. Manual evaluation → Phase 1 Month 9: Automated pipeline after 100+ labeled examples
 3. Single agent → Phase 3: Multi-agent only if data shows clear bottlenecks
 
 **Competitive Advantage**: Most AI journalism tools prioritize speed over trust. Citation integrity + human review = credibility over throughput.
-
----
 
 ## 8. Conclusion
 
@@ -190,9 +195,7 @@ Both prompts include: (1) RAG-loaded editorial guidelines, (2) structural scaffo
 | Transparency | Agent reasoning logs visible | Black-box | Journalists understand WHY |
 
 
-**Contact**: Anand Bhaskaran | [GitHub](https://github.com/anandbhaskaran/ai-knowledge-assistant) | [Writing](https://thecompoundingcuriosity.substack.com)
-
----
+**Contact**: [Anand Bhaskaran](https://home.anand-creations.com/) | [MVP in GitHub](https://github.com/anandbhaskaran/ai-knowledge-assistant) | [Live Demo](https://www.loom.com/share/3b5cd0cc9ee34e34a9852745c75507ff) | [My Blogs](https://home.anand-creations.com/blog)
 
 ## Appendix: Full Prompt Examples
 

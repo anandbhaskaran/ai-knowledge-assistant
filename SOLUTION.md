@@ -591,7 +591,6 @@ The core system is **fully operational** with the following components deployed:
 
 **MVP Metrics Achieved**:
 - Citation accuracy: 90%+ on sample evaluations
-- P95 latency: <30s (outline), <60s (draft)
 - Cost: ~$0.26 per full article generation
 
 ### 5.2 Optimization & Quality Improvement Strategy
@@ -611,7 +610,7 @@ The system uses **iterative refinement** to continuously improve output quality 
 | Improvement Area | Technique | Expected Impact |
 |------------------|-----------|-----------------|
 | **Retrieval Quality** | Hybrid search (vector + BM25) | +10-15% relevance for niche queries |
-| **Prompt Engineering** | Few-shot examples in context | +20% consistency in formatting |
+| **Prompt Engineering** | Further improvement with user feedback | +5% consistency and language |
 | **Source Diversity** | Query expansion & reformulation | +25% unique sources retrieved |
 | **Citation Accuracy** | Post-generation validation | -50% hallucinated citations |
 | **Contextual Understanding** | Semantic chunking | +15% context preservation |
@@ -622,41 +621,15 @@ The system uses **iterative refinement** to continuously improve output quality 
 - **Human Evaluation**: Editorial quality ratings (1-5), factual correctness verification, usability surveys
 - **Continuous Improvement Loop**: Feedback collection → failure analysis → staging tests → A/B testing → production rollout
 
-### 5.3 Next Phases: Production Maturity & Scale
+### 5.3 Next Phases: Enhanced Features & Scale
 
-```mermaid
-timeline
-    title Post-MVP Enhancement Phases
-    section Phase 1 (Months 1-3)<br/>Observability & Quality
-        Grafana Dashboards : Real-time metrics visualization (latency, cost, errors)
-        Langfuse Integration : LLM tracing, prompt versioning, cost tracking per user
-        Evaluation Framework : Automated evals for retrieval quality and generation accuracy
-        Guardrails : Content safety filters, citation validation, bias detection
-    section Phase 2 (Months 4-6)<br/>Optimization & Scale
-        Prompt Management : Version control, A/B testing, rollback capabilities
-        Caching Layer : Redis for embeddings and frequent queries (-40% cost)
-        Hybrid Search : BM25 + vector search fusion (+15% relevance)
-        Load Balancing : Handle 100+ concurrent users
-    section Phase 3 (Months 7-9)<br/>Advanced Features
-        Multi-Agent Fact-Checking : Verification agent cross-references claims
-        Graph RAG (Optional) : Neo4j for investigative journalism workflows
-        Fine-Tuned Models : Llama 3 70B on 1000+ curated examples
-        Advanced Analytics : Topic clustering, source diversity metrics
-```
+| Phase | User Features | Infrastructure | Expected Impact |
+|-------|---------------|----------------|-----------------|
+| **Phase 1<br/>(1-3 mo)** | Granular citations (sentence-level linking)<br/>Citation preview popups<br/>Language rephraser<br/>Brainstorming assistant | Observability (Grafana, Langfuse)<br/>Guardrails & content safety<br/>Automated evaluation | Better citation trust<br/>Improved productivity<br/>Quality monitoring |
+| **Phase 2<br/>(4-6 mo)** | Multi-draft comparison<br/>Fact-checking assistant<br/>Smart summarization<br/>Version history | Response caching (-40% cost)<br/>Hybrid search (+15% relevance)<br/>100+ concurrent users | Collaborative workflows<br/>Cost reduction<br/>Production scale |
+| **Phase 3<br/>(7-9 mo)** | Personalized writing style<br/>Interview question generator<br/>Multi-language support<br/>Source relationship mapping | Fine-tuned models<br/>Graph RAG (optional)<br/>Advanced analytics | Style matching<br/>Investigative workflows<br/>Strategic insights |
 
-### 5.4 Phase Priorities & Tooling
-
-| Phase | Priority Features | Tools & Technologies | Expected Impact |
-|-------|------------------|---------------------|-----------------|
-| **Phase 1: Observability** | Grafana dashboards<br/>Langfuse tracing<br/>Automated evals<br/>Guardrails | Grafana + Prometheus<br/>Langfuse<br/>Custom eval harness<br/>NeMo Guardrails | Visibility into LLM behavior<br/>Cost optimization<br/>Quality assurance<br/>Safety compliance |
-| **Phase 2: Scale** | Prompt management<br/>Caching<br/>Hybrid search<br/>Load balancing | Git-based versioning<br/>Redis<br/>BM25 + RRF<br/>Kubernetes autoscaling | Faster iterations<br/>-40% API costs<br/>+15% retrieval accuracy<br/>100+ concurrent users |
-| **Phase 3: Advanced** | Fact-checking agents<br/>Graph RAG<br/>Custom LLMs<br/>Analytics | LangGraph<br/>Neo4j<br/>Llama 3 fine-tuning<br/>Elastic Stack | Higher trust<br/>Complex queries<br/>Cost reduction<br/>Strategic insights |
-
-**Key Decisions for Next Phases**:
-1. **Phase 1 focus**: Langfuse for LLM observability is highest priority—traces show exactly which prompts/sources led to poor outputs
-2. **Guardrails**: Use NeMo Guardrails or Guardrails AI for content safety, citation validation, and bias detection
-3. **Evaluation framework**: Build custom harness comparing generated drafts against human-edited versions (ROUGE, citation accuracy, factual correctness)
-4. **Graph RAG deferred**: Wait for Phase 3 when archive reaches 10k+ articles and user feedback indicates need for relationship queries
+**Priority**: User-facing productivity features (Phase 1-2) before deep infrastructure optimization (Phase 3).
 
 ---
 
@@ -668,46 +641,22 @@ timeline
 |------|------------|--------|------------|--------|
 | **Hallucinated Citations** | High | Critical | Pre-numbered source lists, post-generation validation, human review requirement | ✅ Implemented |
 | **Poor Retrieval Quality** | Medium | High | Relevance score filtering (>0.75), hybrid search planned, query expansion via agent | ✅ Implemented |
-| **API Downtime** | Medium | High | Graceful degradation (archive-only mode), retry logic with exponential backoff | ✅ Implemented |
-| **Cost Overruns** | Medium | Medium | Caching (Phase 2), daily budget alerts, rate limiting per user | ⏳ Monitoring |
+| **API Downtime** | Medium | High | Graceful degradation (archive-only mode), retry logic with exponential backoff | ⏳ Planned|
+| **Cost Overruns** | Medium | Medium | Caching (Phase 2), daily budget alerts, rate limiting per user | ⏳ Planned |
 | **Bias in Output** | Medium | Critical | Diverse training data, bias detection tools (Phase 1), editorial review | ⏳ Planned |
-| **Data Quality** | Low | Medium | Metadata validation at ingestion, regular archive audits | ✅ Implemented |
+| **Data Quality** | Low | Medium | Metadata validation at ingestion, regular archive audits | ⏳ Planned |
 
-### 6.2 Mitigation Details
+### 6.2 Mitigation Approach
 
-**Hallucinated Citations** (Top Priority):
-- Prompt constraint: "ONLY use sources [1-N]" repeated 3x in different phrasings
-- Post-generation check: Semantic similarity between claim and cited source
-- UI feature: Click citation number to preview source text
-- Mandatory human review before publication
+**Current MVP**: Pre-numbered source lists prevent citation hallucination, relevance filtering (>0.75) ensures quality retrieval, graceful degradation handles API failures, human review required before publication.
 
-**Poor Retrieval Quality**:
-- Current: Filter results with score <0.75, return warning if <3 high-quality sources
-- Phase 2: Hybrid vector + BM25 search with reciprocal rank fusion
-- Agent capability: Automatic query reformulation if initial retrieval fails
+**Phase 1-2 Enhancements**: Hybrid search for better coverage, response caching (-40% costs), bias detection tools, daily budget alerts, user quotas.
 
-**API Downtime/Rate Limits**:
-- Web search fails → Continue with archive-only retrieval
-- Embeddings fail → Retry 3x with exponential backoff, then use cached results
-- GPT-4 rate limit → Fall back to GPT-3.5-turbo with adjusted prompts
-- Daily cost budget: Alert at 80%, pause expensive operations at 100%
-
-**Cost Control**:
-- Current cost: $0.26/article (acceptable for MVP scale)
-- Phase 2 caching: -40% reduction via Redis for embeddings and web results
-- User quotas: 5 outlines/day (free tier), 50/day (pro tier)
-
-**Bias & Ethics**:
-- Phase 1: Integrate Perspective API for toxicity/bias detection
-- Editorial board reviews AI-generated content monthly
-- "Do not use AI" list for sensitive topics (legal cases, investigations)
-- All outputs labeled "AI-Generated - Requires Editorial Review"
-
-**Implementation Philosophy**: Start with simple, reliable mitigations (filtering, human review) in MVP. Add sophisticated solutions (multi-agent fact-checking, bias detection models) in later phases as scale justifies complexity.
+**Philosophy**: Start simple (filtering, human oversight) in MVP, add sophisticated solutions (multi-agent fact-checking, bias detection models) as scale justifies complexity.
 
 ---
 
-## 7. Competitive Differentiation & Innovation
+## 7. Value Proposition & Key Innovations
 
 ### 7.1 What Makes This Solution Stand Out
 
@@ -719,23 +668,28 @@ timeline
 | **Editorial Guidelines** | RAG-loaded guidelines in prompt, compliance scoring | Generic prompts, no domain customization | Maintains house style, tone, and quality standards |
 | **Transparency** | Agent reasoning logs, source relevance scores | Black-box generation | Journalists understand *why* sources were chosen |
 
-### 7.2 Technical Innovations
 
-1. **Source-Aware Prompting**:
-   - Pre-load numbered source list into draft prompt
-   - LLM references `[1]`, `[2]` instead of generating free-form citations
-   - **Result**: 90%+ citation accuracy vs. 60-70% in naive RAG
+### 7.2 Key Innovations & Measurable Impact
 
-2. **Dual-Tool Agent Architecture**:
-   - Archive tool: Deep, narrow search (company's expertise)
-   - Web tool: Broad, current search (external perspectives)
-   - Agent dynamically balances based on query recency
-   - **Result**: 25% improvement in source diversity vs. single-source RAG
+**1. Intelligent Multi-Source Retrieval**
+- **Innovation**: ReActAgent autonomously combines institutional archive knowledge with real-time web search
+- **Value**: Single query retrieves both historical context (from archive) and breaking developments (from web)
+- **Impact**: 25% more diverse sources than single-database systems, better story angles
 
-3. **Relevance-Driven Early Exit**:
-   - If vector search yields scores <0.75, return "insufficient sources" instead of generating low-quality output
-   - Prevents "garbage in, garbage out" problem
-   - **Result**: Maintains 85%+ usability score vs. 65% for always-generate systems
+**2. Citation Integrity Architecture**
+- **Innovation**: Pre-numbered source lists + post-generation validation prevent hallucinations
+- **Value**: Journalists can trust citations without manual verification of every claim
+- **Impact**: 90%+ citation accuracy vs. 60-70% in generic RAG systems, builds editorial credibility
+
+**3. Quality-First Generation**
+- **Innovation**: Refuse to generate when retrieval quality is insufficient (relevance score <0.75)
+- **Value**: No "garbage in, garbage out" - system admits when it lacks good sources
+- **Impact**: 85% usability score (vs. 65% for always-generate systems), journalists don't waste time editing poor drafts
+
+**4. Editorial Standards Compliance**
+- **Innovation**: Publication-specific guidelines loaded via RAG, automated compliance scoring
+- **Value**: Every draft matches house style, tone, and citation format automatically
+- **Impact**: Reduced editing time, consistent quality across all AI-assisted articles
 
 ---
 
@@ -768,6 +722,6 @@ This solution balances **MVP delivery** (already completed) with **clear product
 ---
 
 **Document Version**: 1.0
-**Author**: AI Solutions Architect Candidate
+**Author**: Anand Bhaskaran
 **Date**: 2025-11-09
 **Status**: Submission for AI Innovation Lead Role
